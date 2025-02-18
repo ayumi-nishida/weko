@@ -87,7 +87,9 @@ export class TreeList2Component implements OnInit {
     biblio_flag: false,
     display_format: '1',
     thumbnail_delete_flag: false,
-    image_name: ''
+    image_name: '',
+    index_url: '',
+    cnri: ''
   };
   public roleModel = {
     browsing_role_able: [],
@@ -154,7 +156,9 @@ export class TreeList2Component implements OnInit {
     Add_Update_Success: [],
     Err_File_Ext: [],
     Enter_Required_Fields: [],
-    Required_Input: []
+    Required_Input: [],
+    IndexURL: [],
+    CNRI: []
   };
   public formData: FormData = new FormData();
   private imgSrc = '';
