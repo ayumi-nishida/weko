@@ -100,14 +100,6 @@ WEKO_ACCOUNTS_ATTRIBUTE_LIST = [
 ]
 """Attribute List."""
 
-WEKO_ACCOUNTS_SHIB_ROLE_RELATION = {
-    '管理者': 'System Administrator',
-    '図書館員': 'Repository Administrator',
-    '教員': 'Contributor',
-    '教官': 'Contributor'
-}
-"""Role relation."""
-
 WEKO_ACCOUNTS_ROLE_LIST = [
     'System Administrator', 
     'Repository Administrator', 
@@ -142,7 +134,17 @@ WEKO_ACCOUNTS_OTHERS_ROLE = {
   "defaultRole": 'None', # ロール無
   "organizationName": []  
 } 
+
 """Others Default role."""
+
+WEKO_ACCOUNTS_SHIB_ROLE_RELATION = {
+    '管理者': 'System Administrator',
+    '学認IdP': WEKO_ACCOUNTS_GAKUNIN_ROLE['defaultRole'],
+    '機関内のOrthros': WEKO_ACCOUNTS_ORTHROS_INSIDE_ROLE['defaultRole'],
+    '機関外のOrthros': WEKO_ACCOUNTS_ORTHROS_OUTSIDE_ROLE['defaultRole'],
+    'その他': WEKO_ACCOUNTS_OTHERS_ROLE['defaultRole']
+}
+"""Role relation."""
 
 WEKO_ACCOUNTS_SHIB_IDP_LOGIN_ENABLED = True
 """Shibboleth login pattern."""

@@ -32,6 +32,7 @@ from weko_admin.models import AdminSettings
 _app = LocalProxy(lambda: current_app.extensions['weko-admin'].app)
 
 
+
 class ShibSettingView(BaseView):
     """ShibSettingView."""
 
@@ -89,22 +90,19 @@ class ShibSettingView(BaseView):
                     # デフォルトロールの変更    
                     if gakunin_role != new_gakunin_role:
                         gakunin_role = new_gakunin_role
-                        with current_app.app_context():
-                            current_app.config['WEKO_ACCOUNTS_GAKUNIN_ROLE']['defaultRole'] = new_gakunin_role
+                        _app.config['WEKO_ACCOUNTS_GAKUNIN_ROLE']['defaultRole'] = new_gakunin_role
                         flash(
                             _('Gakunin IdP role was updated.'),
                             category='success')
                     if orthros_role != new_orthros_role:
                         orthros_role = new_orthros_role
-                        with current_app.app_context():
-                            current_app.config['WEKO_ACCOUNTS_ORTHROS_OUTSIDE_ROLE']['defaultRole'] = new_orthros_role
+                        _app.config['WEKO_ACCOUNTS_ORTHROS_OUTSIDE_ROLE']['defaultRole'] = new_orthros_role
                         flash(
                             _('Orthros role was updated.'),
                             category='success')
                     if others_role != new_others_role:
                         others_role = new_others_role
-                        with current_app.app_context():
-                            current_app.config['WEKO_ACCOUNTS_OTHERS_ROLE']['defaultRole'] = new_others_role
+                        _app.config['WEKO_ACCOUNTS_OTHERS_ROLE']['defaultRole'] = new_others_role
                         flash(
                             _('Others role was updated.'),
                             category='success')
@@ -112,8 +110,7 @@ class ShibSettingView(BaseView):
                     # 属性マッピングの変更    
                     if weko_eppn_value != new_weko_eppn_value:
                         weko_eppn_value = new_weko_eppn_value
-                        with current_app.app_context():
-                            current_app.config['WEKO_ACCOUNTS_ATTRIBUTE_MAP']['shib_eppn'] = new_weko_eppn_value
+                        _app.config['WEKO_ACCOUNTS_ATTRIBUTE_MAP']['shib_eppn'] = new_weko_eppn_value
                         flash(
                             _('shib_eppn mapping was updated.'),
                             category='success')
