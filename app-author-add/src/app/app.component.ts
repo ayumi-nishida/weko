@@ -1,4 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { a } from '@angular/core/src/render3';
 import { Http, RequestOptions, Headers } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 declare var $: any;
@@ -26,6 +27,8 @@ export class AppComponent implements OnInit {
     Author_Add_Identifier: [],
     Author_Affiliation_Name: [],
     Author_Add_Affiliation_Name: [],
+    Author_Affiliation_Period:[],
+    Author_Add_Affiliation_Period:[],
     Author_Affiliation: [],
     Author_Add_Affiliation: [],
     Author_Button_Delete: [],
@@ -75,6 +78,12 @@ export class AppComponent implements OnInit {
             affiliationName: "",
             affiliationNameLang: "ja",
             affiliationNameShowFlg: "true"
+          }
+        ],
+        affiliationPeriodInfo: [
+          {
+            periodStart: "",
+            periodEnd: "" 
           }
         ]
       }
@@ -132,6 +141,7 @@ export class AppComponent implements OnInit {
     }
   ];
 
+  public placeholderForDate: string ="yyyy-mm-dd";
 
   constructor(private http: Http,
   ) { }
@@ -325,6 +335,15 @@ export class AppComponent implements OnInit {
       this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationNameInfo.splice(affiliationNameIndex, 1)
     }
   }
+  delAffiliationPeriodData(affiliationIndex: string | number, affiliationPeriodIndex: any) {
+    //全部削除する場合
+    if (this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.length == 1) {
+      let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.splice(affiliationPeriodIndex, 1, subAffiliationPeriodInfoObj);
+    } else {
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.splice(affiliationPeriodIndex, 1)
+    }
+  }
   /**
    * affiliationを削除する
    * ＠@param 削除する位置情報
@@ -389,6 +408,18 @@ export class AppComponent implements OnInit {
     //行目を追加
     this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationNameInfo.push(subAffiliationNameInfoObj);
   }
+  /**
+   * 所属機関名情報を追加する
+   * ＠@param 追加する位置情報
+   */
+  addAffiliationPeriod(affiliationIndex: any) {
+    //子対象を取得する
+    let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+    //行目を追加
+    this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.push(subAffiliationPeriodInfoObj);
+  }
+
+
   /**
    * 所属情報を追加する
    */
@@ -499,6 +530,17 @@ export class AppComponent implements OnInit {
   }
   return subAffiliationNameInfoObj;
   }
+  /**
+   * affiliationPeriod情報を返す
+  */
+  returnSubAffiliationPeriodInfoObj(): any {
+    //所属機関名情報
+    let subAffiliationPeriodInfoObj = {
+      periodStart: "",
+      periodEnd: ""
+    }
+    return subAffiliationPeriodInfoObj;
+    }
   /**
    * affiliation情報を返す
    */

@@ -377,7 +377,64 @@
                               </div>
                             </div>
                           </div>
-                          <!-- 所属機関名 end  -->                       
+                          <!-- 所属機関名 end  -->
+                          <!-- 所属機関所属期間　start -->
+                          <div class="row">
+                            
+                            <div class="col-sm-12 col-md-12">
+                              <div class="col-sm-1 col-md-1 textRight">
+                              <!-- 所属機関所属期間 -->
+                                {{langJson.Author_Affiliation_Period[1]}}
+                              </div>
+                              <div class="col-sm-11 col-md-11">
+                                <!-- for start -->
+                                <ng-container *ngFor="let affiliationPeriodData of affiliationData.affiliationPeriodInfo;let affiliationPeriodIndex=index">
+                                  <div class="">
+                                    <div class="col-sm-12 col-md-12 divBottom">
+                                      <div class="col-sm-2 col-md-2">
+                                      </div>
+                                      <div class="col-sm-1 col-md-1">
+                                      </div>
+                                      <div class="col-sm-1 col-md-1 textRight">
+                                        {{langJson.Author_Affiliation_Period_Start[1]}}
+                                      </div>
+                                      <div class="ccol-sm-2 col-md-2">
+                                        <input type="text" class="form-control" placeholder={{placeholderForDate}} [(ngModel)]="affiliationPeriodData.periodStart">
+                                      </div>
+                                      <div class="col-sm-1 col-md-1 textRight">
+                                      <!-- 所属機関所属期間 -->
+                                        {{langJson.Author_Affiliation_Period_End[1]}}
+                                      </div>
+                                      <div class="col-sm-2 col-md-2">
+                                        <input type="text" class="form-control" placeholder={{placeholderForDate}} [(ngModel)]="affiliationPeriodData.periodEnd">
+                                      </div>
+                                      <div class="col-sm-2 col-md-2">
+                                      </div>
+                                      <div class="col-sm-1 col-md-1">
+                                        <div>
+                                          <button type="button" class="close delButton" (click)="delAffiliationPeriodData(affiliationIndex, affiliationPeriodIndex)">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <p></p>
+                                </ng-container>
+                                <!-- 第二行目 -->
+                                <div class="row ">
+                                  <div class="col-sm-11 col-md-11 textRight">
+                                    <button type="button" class="btn btn-link" (click)="addAffiliationPeriod(affiliationIndex)">+&nbsp;
+                                      <!-- 所属機関所属期間を追加 -->
+                                      {{langJson.Author_Add_Affiliation_Period[1]}}
+                                    </button>
+                                  </div>
+                                </div>
+                                <!-- 第二行目 end-->                             
+                              </div>
+                            </div>
+                          </div>
+                          <!-- 所属機関名 end  --> 
                         </div>
                       </div>
                     </div>
