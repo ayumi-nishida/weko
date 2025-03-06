@@ -53,7 +53,7 @@ export class AppComponent implements OnInit {
     ],
     authorIdInfo: [
       {
-        idType: "2",
+        idType: "1",
         authorId: "",
         authorIdShowFlg: "true"
       }
@@ -146,10 +146,12 @@ export class AppComponent implements OnInit {
   }
 
   /**
-   *
+   * 初期値の取得
+   * 
    */
   getAuthorData() {
     let urlStr = window.location.href;
+    // editの場合
     if (urlStr.indexOf("edit")!= -1) {
       this.deleteBtn = true;
       let paramJson = { Id: "" }
@@ -160,7 +162,14 @@ export class AppComponent implements OnInit {
           console.log(res)
         }
       ).catch()
+    // addの場合
     }else{
+      // 初期値でweko_idの最大値+1を設定する。
+      this.getDataOfMaxWekoId().then(
+        res => {
+          this.authorJsonObj.authorIdInfo[0].authorId = res.max_author_id + 1;
+        }
+      ).catch()
       this.deleteBtn = false;
     }
   }
@@ -547,7 +556,7 @@ export class AppComponent implements OnInit {
         var urlArr = window.location.href.split('/');
         window.location.href = urlArr[0] + "//" + urlArr[2] + "/admin/authors/";
       }).catch(res => {
-        alert(res.msg);
+        alert(JSON.parse(res._body).msg);
       })
     }else{
       this.postPageDataJson(dbJson).then(res => {
@@ -555,7 +564,7 @@ export class AppComponent implements OnInit {
         var urlArr = window.location.href.split('/');
         window.location.href = urlArr[0] + "//" + urlArr[2] + "/admin/authors/";
       }).catch(res => {
-        alert(res.msg);
+        alert(JSON.parse(res._body).msg);
       })
     }
   }
@@ -693,7 +702,7 @@ export class AppComponent implements OnInit {
       .catch(this.handleError);
   }
   /**
-   *
+   * call api (get author data by id)
    */
   getDataOfAuthor(esid: any) {
     var urlArr = window.location.href.split('/');
@@ -704,6 +713,20 @@ export class AppComponent implements OnInit {
       .then(response => response.json() as any)
       .catch(this.handleError);
   }
+
+  /**
+   * call api (get max weko id)
+   */
+  getDataOfMaxWekoId(){
+    var urlArr = window.location.href.split('/');
+    const url = urlArr[0] + "//" + urlArr[2] + "/api/authors/get_max_weko_id"
+    return this.http
+      .get(url)
+      .toPromise()
+      .then(response => response.json() as any)
+      .catch(this.handleError);
+  }
+
   /**
    * call api (get author prefix prefix)
    */
