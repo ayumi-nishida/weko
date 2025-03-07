@@ -384,7 +384,8 @@ export class AppComponent implements OnInit {
         if(this.searchJson.item_cnt.aggregations.item_count.buckets.length != 0){
           for(let cntData of this.searchJson.item_cnt.aggregations.item_count.buckets){
             let authorIdInfo = data._source.authorIdInfo;
-            if (Array.isArray(authorIdInfo) && authorIdInfo.length && cntData.key == authorIdInfo[0].authorId) {
+            let pkId = data._source.pk_id;
+            if (cntData.key == pkId) {
               subData.itemCnt = cntData.doc_count;
               break;
             }

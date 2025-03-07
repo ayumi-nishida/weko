@@ -177,7 +177,7 @@ export class AppComponent implements OnInit {
       // 初期値でweko_idの最大値+1を設定する。
       this.getDataOfMaxWekoId().then(
         res => {
-          this.authorJsonObj.authorIdInfo[0].authorId = res.max_author_id + 1;
+          this.authorJsonObj.authorIdInfo[0].authorId = String(res.max_author_id + 1);
         }
       ).catch()
       this.deleteBtn = false;
