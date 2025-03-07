@@ -28,6 +28,8 @@ export class AppComponent implements OnInit {
     Author_Affiliation_Name: [],
     Author_Add_Affiliation_Name: [],
     Author_Affiliation_Period:[],
+    Author_Affiliation_Period_Start:[],
+    Author_Affiliation_Period_End:[],
     Author_Add_Affiliation_Period:[],
     Author_Affiliation: [],
     Author_Add_Affiliation: [],
@@ -409,12 +411,18 @@ export class AppComponent implements OnInit {
     this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationNameInfo.push(subAffiliationNameInfoObj);
   }
   /**
-   * 所属機関名情報を追加する
+   * 所属期間情報を追加する
    * ＠@param 追加する位置情報
    */
   addAffiliationPeriod(affiliationIndex: any) {
     //子対象を取得する
     let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+    console.log("AAAAAAAAAAAAA")
+    console.log(affiliationIndex);
+    console.log(this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo)
+    if (this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo === undefined) {
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo = [];
+    }
     //行目を追加
     this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.push(subAffiliationPeriodInfoObj);
   }
@@ -534,7 +542,7 @@ export class AppComponent implements OnInit {
    * affiliationPeriod情報を返す
   */
   returnSubAffiliationPeriodInfoObj(): any {
-    //所属機関名情報
+    //所属期間情報
     let subAffiliationPeriodInfoObj = {
       periodStart: "",
       periodEnd: ""
@@ -548,13 +556,18 @@ export class AppComponent implements OnInit {
   //所属情報
   let subAffiliationInfoObj = {
     "identifierInfo": [], 
-    "affiliationNameInfo": []
+    "affiliationNameInfo": [],
+    "affiliationPeriodInfo": []
   }
   let subIdentifierInfoObj = this.returnSubIdentifierInfoObj();
   subAffiliationInfoObj.identifierInfo.push(subIdentifierInfoObj);
   
   let subAffiliationNameInfoObj = this.returnSubAffiliationNameInfoObj();
   subAffiliationInfoObj.affiliationNameInfo.push(subAffiliationNameInfoObj);
+  
+  let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+  subAffiliationInfoObj.affiliationPeriodInfo.push(subAffiliationPeriodInfoObj);
+  
   return subAffiliationInfoObj;
   }
 
