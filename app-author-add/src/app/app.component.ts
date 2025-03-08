@@ -84,8 +84,8 @@ export class AppComponent implements OnInit {
         ],
         affiliationPeriodInfo: [
           {
-            periodStart: "",
-            periodEnd: "" 
+            periodStart: null,
+            periodEnd: null
           }
         ]
       }
@@ -417,9 +417,6 @@ export class AppComponent implements OnInit {
   addAffiliationPeriod(affiliationIndex: any) {
     //子対象を取得する
     let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
-    console.log("AAAAAAAAAAAAA")
-    console.log(affiliationIndex);
-    console.log(this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo)
     if (this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo === undefined) {
       this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo = [];
     }
@@ -544,8 +541,8 @@ export class AppComponent implements OnInit {
   returnSubAffiliationPeriodInfoObj(): any {
     //所属期間情報
     let subAffiliationPeriodInfoObj = {
-      periodStart: "",
-      periodEnd: ""
+      periodStart: null,
+      periodEnd: null
     }
     return subAffiliationPeriodInfoObj;
     }
