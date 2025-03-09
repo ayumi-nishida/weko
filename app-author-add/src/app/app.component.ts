@@ -39,9 +39,13 @@ export class AppComponent implements OnInit {
     Author_familyNmAndNm: [],
     Author_fullNm: [],
     Author_placeholder_authorId: [],
-    Author_Confirm_Msg: []
+    Author_Confirm_Msg: [],
+    Author_Force_Change_Flag: []
   };
   public deleteBtn :boolean = false;
+  public forceChangeCheck: boolean = false;
+  public forceChangeFlag: boolean = false;
+  public displayPkId: boolean = false;
   //set data of page by json
   public authorJsonObj: any = {
     id: "",
@@ -166,6 +170,8 @@ export class AppComponent implements OnInit {
     // editの場合
     if (urlStr.indexOf("edit")!= -1) {
       this.deleteBtn = true;
+      this.forceChangeCheck = true;
+      this.displayPkId = true;
       let paramJson = { Id: "" }
       paramJson.Id = urlStr.substring(urlStr.indexOf("=")).replace("=", "");
       this.getDataOfAuthor(paramJson).then(
@@ -724,7 +730,9 @@ export class AppComponent implements OnInit {
     var urlArr = window.location.href.split('/');
     const url = urlArr[0] + "//" + urlArr[2] + "/api/authors/edit"
     return this.http
-      .post(url, authorJsonObj)
+      .post(url,
+        {author: authorJsonObj,
+        forceChangeFlag: this.forceChangeFlag})
       .toPromise()
       .then(response => response.json() as any)
       .catch(this.handleError);
