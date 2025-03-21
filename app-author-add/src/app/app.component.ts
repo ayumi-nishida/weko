@@ -1,4 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
+import { a } from '@angular/core/src/render3';
 import { Http, RequestOptions, Headers } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 declare var $: any;
@@ -26,6 +27,10 @@ export class AppComponent implements OnInit {
     Author_Add_Identifier: [],
     Author_Affiliation_Name: [],
     Author_Add_Affiliation_Name: [],
+    Author_Affiliation_Period:[],
+    Author_Affiliation_Period_Start:[],
+    Author_Affiliation_Period_End:[],
+    Author_Add_Affiliation_Period:[],
     Author_Affiliation: [],
     Author_Add_Affiliation: [],
     Author_Button_Delete: [],
@@ -34,9 +39,13 @@ export class AppComponent implements OnInit {
     Author_familyNmAndNm: [],
     Author_fullNm: [],
     Author_placeholder_authorId: [],
-    Author_Confirm_Msg: []
+    Author_Confirm_Msg: [],
+    Author_Force_Change_Flag: []
   };
   public deleteBtn :boolean = false;
+  public forceChangeCheck: boolean = false;
+  public forceChangeFlag: boolean = false;
+  public displayPkId: boolean = false;
   //set data of page by json
   public authorJsonObj: any = {
     id: "",
@@ -53,7 +62,7 @@ export class AppComponent implements OnInit {
     ],
     authorIdInfo: [
       {
-        idType: "2",
+        idType: "1",
         authorId: "",
         authorIdShowFlg: "true"
       }
@@ -75,6 +84,12 @@ export class AppComponent implements OnInit {
             affiliationName: "",
             affiliationNameLang: "ja",
             affiliationNameShowFlg: "true"
+          }
+        ],
+        affiliationPeriodInfo: [
+          {
+            periodStart: null,
+            periodEnd: null
           }
         ]
       }
@@ -132,6 +147,7 @@ export class AppComponent implements OnInit {
     }
   ];
 
+  public placeholderForDate: string ="yyyy-mm-dd";
 
   constructor(private http: Http,
   ) { }
@@ -146,12 +162,16 @@ export class AppComponent implements OnInit {
   }
 
   /**
-   *
+   * 初期値の取得
+   * 
    */
   getAuthorData() {
     let urlStr = window.location.href;
+    // editの場合
     if (urlStr.indexOf("edit")!= -1) {
       this.deleteBtn = true;
+      this.forceChangeCheck = true;
+      this.displayPkId = true;
       let paramJson = { Id: "" }
       paramJson.Id = urlStr.substring(urlStr.indexOf("=")).replace("=", "");
       this.getDataOfAuthor(paramJson).then(
@@ -160,7 +180,14 @@ export class AppComponent implements OnInit {
           console.log(res)
         }
       ).catch()
+    // addの場合
     }else{
+      // 初期値でweko_idの最大値+1を設定する。
+      this.getDataOfMaxWekoId().then(
+        res => {
+          this.authorJsonObj.authorIdInfo[0].authorId = String(res.max_author_id + 1);
+        }
+      ).catch()
       this.deleteBtn = false;
     }
   }
@@ -316,6 +343,15 @@ export class AppComponent implements OnInit {
       this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationNameInfo.splice(affiliationNameIndex, 1)
     }
   }
+  delAffiliationPeriodData(affiliationIndex: string | number, affiliationPeriodIndex: any) {
+    //全部削除する場合
+    if (this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.length == 1) {
+      let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.splice(affiliationPeriodIndex, 1, subAffiliationPeriodInfoObj);
+    } else {
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.splice(affiliationPeriodIndex, 1)
+    }
+  }
   /**
    * affiliationを削除する
    * ＠@param 削除する位置情報
@@ -380,6 +416,21 @@ export class AppComponent implements OnInit {
     //行目を追加
     this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationNameInfo.push(subAffiliationNameInfoObj);
   }
+  /**
+   * 所属期間情報を追加する
+   * ＠@param 追加する位置情報
+   */
+  addAffiliationPeriod(affiliationIndex: any) {
+    //子対象を取得する
+    let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+    if (this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo === undefined) {
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo = [];
+    }
+    //行目を追加
+    this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.push(subAffiliationPeriodInfoObj);
+  }
+
+
   /**
    * 所属情報を追加する
    */
@@ -491,19 +542,35 @@ export class AppComponent implements OnInit {
   return subAffiliationNameInfoObj;
   }
   /**
+   * affiliationPeriod情報を返す
+  */
+  returnSubAffiliationPeriodInfoObj(): any {
+    //所属期間情報
+    let subAffiliationPeriodInfoObj = {
+      periodStart: null,
+      periodEnd: null
+    }
+    return subAffiliationPeriodInfoObj;
+    }
+  /**
    * affiliation情報を返す
    */
   returnSubAffiliationInfoObj(): any {
   //所属情報
   let subAffiliationInfoObj = {
     "identifierInfo": [], 
-    "affiliationNameInfo": []
+    "affiliationNameInfo": [],
+    "affiliationPeriodInfo": []
   }
   let subIdentifierInfoObj = this.returnSubIdentifierInfoObj();
   subAffiliationInfoObj.identifierInfo.push(subIdentifierInfoObj);
   
   let subAffiliationNameInfoObj = this.returnSubAffiliationNameInfoObj();
   subAffiliationInfoObj.affiliationNameInfo.push(subAffiliationNameInfoObj);
+  
+  let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+  subAffiliationInfoObj.affiliationPeriodInfo.push(subAffiliationPeriodInfoObj);
+  
   return subAffiliationInfoObj;
   }
 
@@ -547,7 +614,7 @@ export class AppComponent implements OnInit {
         var urlArr = window.location.href.split('/');
         window.location.href = urlArr[0] + "//" + urlArr[2] + "/admin/authors/";
       }).catch(res => {
-        alert(res.msg);
+        alert(JSON.parse(res._body).msg);
       })
     }else{
       this.postPageDataJson(dbJson).then(res => {
@@ -555,7 +622,7 @@ export class AppComponent implements OnInit {
         var urlArr = window.location.href.split('/');
         window.location.href = urlArr[0] + "//" + urlArr[2] + "/admin/authors/";
       }).catch(res => {
-        alert(res.msg);
+        alert(JSON.parse(res._body).msg);
       })
     }
   }
@@ -663,7 +730,9 @@ export class AppComponent implements OnInit {
     var urlArr = window.location.href.split('/');
     const url = urlArr[0] + "//" + urlArr[2] + "/api/authors/edit"
     return this.http
-      .post(url, authorJsonObj)
+      .post(url,
+        {author: authorJsonObj,
+        forceChangeFlag: this.forceChangeFlag})
       .toPromise()
       .then(response => response.json() as any)
       .catch(this.handleError);
@@ -693,7 +762,7 @@ export class AppComponent implements OnInit {
       .catch(this.handleError);
   }
   /**
-   *
+   * call api (get author data by id)
    */
   getDataOfAuthor(esid: any) {
     var urlArr = window.location.href.split('/');
@@ -704,6 +773,20 @@ export class AppComponent implements OnInit {
       .then(response => response.json() as any)
       .catch(this.handleError);
   }
+
+  /**
+   * call api (get max weko id)
+   */
+  getDataOfMaxWekoId(){
+    var urlArr = window.location.href.split('/');
+    const url = urlArr[0] + "//" + urlArr[2] + "/api/authors/get_max_weko_id"
+    return this.http
+      .get(url)
+      .toPromise()
+      .then(response => response.json() as any)
+      .catch(this.handleError);
+  }
+
   /**
    * call api (get author prefix prefix)
    */

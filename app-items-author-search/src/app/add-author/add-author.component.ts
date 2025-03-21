@@ -27,6 +27,10 @@ export class AddAuthorComponent implements OnInit {
     Author_Add_Identifier: [],
     Author_Affiliation_Name: [],
     Author_Add_Affiliation_Name: [],
+    Author_Affiliation_Period:[],
+    Author_Affiliation_Period_Start:[],
+    Author_Affiliation_Period_End:[],
+    Author_Add_Affiliation_Period:[],
     Author_Affiliation: [],
     Author_Add_Affiliation: [],
     Author_Button_Delete: [],
@@ -54,7 +58,7 @@ export class AddAuthorComponent implements OnInit {
     ],
     authorIdInfo: [
       {
-        idType: "2",
+        idType: "1",
         authorId: "",
         authorIdShowFlg: "true"
       }
@@ -76,6 +80,12 @@ export class AddAuthorComponent implements OnInit {
             affiliationName: "",
             affiliationNameLang: "ja",
             affiliationNameShowFlg: "true"
+          }
+        ],
+        affiliationPeriodInfo: [
+          {
+            periodStart: null,
+            periodEnd: null
           }
         ]
       }
@@ -126,7 +136,7 @@ export class AddAuthorComponent implements OnInit {
       fullName: "セイ,メイ"
     }
   ];
-
+  public placeholderForDate: string ="yyyy-mm-dd";
 
   constructor(private http: Http,
   ) { }
@@ -139,6 +149,18 @@ export class AddAuthorComponent implements OnInit {
   ngAfterViewInit() {
     this.getAuthorData();
   }
+  /**
+   * call api (get max weko id)
+   */
+    getDataOfMaxWekoId(){
+      var urlArr = window.location.href.split('/');
+      const url = urlArr[0] + "//" + urlArr[2] + "/api/authors/get_max_weko_id"
+      return this.http
+        .get(url)
+        .toPromise()
+        .then(response => response.json() as any)
+        .catch(this.handleError);
+    }
   /**
    * get authors prefix settings
    */
@@ -197,7 +219,12 @@ export class AddAuthorComponent implements OnInit {
           console.log(res)
         }
       ).catch()
-    }else{
+    }else{      // 初期値でweko_idの最大値+1を設定する。
+      this.getDataOfMaxWekoId().then(
+        res => {
+          this.authorJsonObj.authorIdInfo[0].authorId = String(res.max_author_id + 1);
+        }
+      ).catch()
       this.deleteBtn = false;
     }
   }
@@ -335,6 +362,16 @@ export class AddAuthorComponent implements OnInit {
       this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationNameInfo.splice(affiliationNameIndex, 1)
     }
   }
+
+  delAffiliationPeriodData(affiliationIndex: string | number, affiliationPeriodIndex: any) {
+    if (this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.length == 1) {
+      let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.splice(affiliationPeriodIndex, 1, subAffiliationPeriodInfoObj);
+    } else {
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.splice(affiliationPeriodIndex, 1)
+    }
+  }
+
   /**
    * affiliationを削除する
    * ＠@param 削除する位置情報
@@ -399,6 +436,21 @@ export class AddAuthorComponent implements OnInit {
     //行目を追加
     this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationNameInfo.push(subAffiliationNameInfoObj);
   }
+
+  /**
+   * 所属期間情報を追加する
+   * ＠@param 追加する位置情報
+   */
+  addAffiliationPeriod(affiliationIndex: any) {
+    //子対象を取得する
+    let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+    if (this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo === undefined) {
+      this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo = [];
+    }
+    //行目を追加
+    this.authorJsonObj.affiliationInfo[affiliationIndex].affiliationPeriodInfo.push(subAffiliationPeriodInfoObj);
+  }
+
   /**
    * 所属情報を追加する
    */
@@ -466,7 +518,7 @@ export class AddAuthorComponent implements OnInit {
   returnAuthorIdInfoObj(): any {
     //著者ID情報
     let authorIdInfoObj = {
-      idType: "1",
+      idType: "2",
       authorId: "",
       authorIdShowFlg: "true"
     }
@@ -508,19 +560,34 @@ export class AddAuthorComponent implements OnInit {
     return subAffiliationNameInfoObj;
     }
     /**
+     * affiliationPeriod情報を返す
+     */
+    returnSubAffiliationPeriodInfoObj(): any {
+    //所属期間情報
+    let subAffiliationPeriodInfoObj = {
+      periodStart: null,
+      periodEnd: null
+    }
+    return subAffiliationPeriodInfoObj;
+    }
+    /**
      * affiliation情報を返す
      */
     returnSubAffiliationInfoObj(): any {
     //所属情報
     let subAffiliationInfoObj = {
       "identifierInfo": [], 
-      "affiliationNameInfo": []
+      "affiliationNameInfo": [],
+      "affiliationPeriodInfo": []
     }
     let subIdentifierInfoObj = this.returnSubIdentifierInfoObj();
     subAffiliationInfoObj.identifierInfo.push(subIdentifierInfoObj);
     
     let subAffiliationNameInfoObj = this.returnSubAffiliationNameInfoObj();
     subAffiliationInfoObj.affiliationNameInfo.push(subAffiliationNameInfoObj);
+    
+    let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
+    subAffiliationInfoObj.affiliationPeriodInfo.push(subAffiliationPeriodInfoObj);
     return subAffiliationInfoObj;
     }
   /**
@@ -547,7 +614,7 @@ export class AddAuthorComponent implements OnInit {
       alert(res.msg);
       this.showFlg.emit(0);
     }).catch(res => {
-      alert(res.msg);
+      alert(JSON.parse(res._body).msg);
     })
   }
   /**
