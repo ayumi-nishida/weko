@@ -11,3 +11,169 @@
 .margin-0 {
   margin-top: 0px;
 }
+
+/* モーダルウィンドウのスタイル */
+.Mymodal {
+  display: none; /* デフォルトでは非表示 */
+  position: fixed; /* 固定位置 */
+  z-index: 1050; /* 他のコンテンツの上に表示 */
+  left: 0;
+  top: 0;
+  width: 100%; /* フルスクリーン */
+  height: 100%; /* フルスクリーン */
+  overflow: auto; /* 必要に応じてスクロール */
+  background-color: rgba(0, 0, 0, 0.5); /* 背面を薄暗くする */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 上下のマージンと中央寄せ */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 60%; /* 幅 */
+  z-index: 1060; /* モーダルコンテンツをさらに前面に */
+}
+
+.modal-header, .modal-footer {
+  padding: 10px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-header {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-footer {
+  border-top: 1px solid #e5e5e5;
+  text-align: right; /* ボタンを右寄せ */
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.enable_button:disabled {
+  background-color: #ccc; /* 非活性時の背景色 */
+  cursor: not-allowed; /* 非活性時のカーソル */
+}
+
+.enable_button {
+  background-color: #5bc0de; /* 活性時の背景色 */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.cancel-button {
+  background-color: #d9534f; /* キャンセルボタンの背景色 */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+/* 新しいモーダル用のCSS */
+#ConfirmModalComponent2 {
+  display: none; /* デフォルトでは非表示 */
+  position: fixed; /* 固定位置 */
+  z-index: 1050; /* 他のコンテンツの上に表示 */
+  left: 0;
+  top: 0;
+  width: 100%; /* フルスクリーン */
+  height: 100%; /* フルスクリーン */
+  overflow: auto; /* 必要に応じてスクロール */
+  background-color: rgba(0, 0, 0, 0.5); /* 背面を薄暗くする */
+}
+
+#ConfirmModalComponent2 .modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 上下のマージンと中央寄せ */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 60%; /* 幅 */
+  z-index: 1060; /* モーダルコンテンツをさらに前面に */
+}
+
+#ConfirmModalComponent2 .modal-header, #ConfirmModalComponent2 .modal-footer {
+  padding: 10px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+#ConfirmModalComponent2 .modal-header {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+#ConfirmModalComponent2 .modal-footer {
+  border-top: 1px solid #e5e5e5;
+  text-align: right; /* ボタンを右寄せ */
+}
+
+#ConfirmModalComponent2 .close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+#ConfirmModalComponent2 .close:hover,
+#ConfirmModalComponent2 .close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#ConfirmModalComponent2 .enable_button:disabled {
+  background-color: #ccc; /* 非活性時の背景色 */
+  cursor: not-allowed; /* 非活性時のカーソル */
+}
+
+#ConfirmModalComponent2 .enable_button {
+  background-color: #5bc0de; /* 活性時の背景色 */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#ConfirmModalComponent2 .cancel-button {
+  background-color: #d9534f; /* キャンセルボタンの背景色 */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}

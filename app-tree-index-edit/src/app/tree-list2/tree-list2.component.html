@@ -129,6 +129,7 @@
               </div>
               <!-- 0611 add start -->
               <!-- 公開 -->
+              <!--インデックス公開ロック機能追加-->
               <div class="panel panel-default">
                 <div class="panel-body">
                   <div class="row">
@@ -138,20 +139,51 @@
                       {{langJson.Publish[1]}}
                     </div>
                     <div class="col-sm-10 col-md-10">
-                      <input type="checkbox" id="rss_display" [(ngModel)]="detailData.public_state">{{langJson.Open_To_Public[1]}}
+                      <input type="checkbox" id="rss_display" [(ngModel)]="detailData.public_state" (change)="onCheckboxChange2($event)">{{langJson.Open_To_Public[1]}}
                       <p>
-                        <div *ngIf="detailData.public_state" class="input-group">
-                          <span class="input-group-addon">
-                            <!-- {{langJson.Japanese[1]}} -->
-                            {{langJson.Date[1]}}：
-                          </span>
-                          <input type="text" class="form-control" id="datepicker" placeholder="例：20180628" [(ngModel)]="detailData.public_date">
-                        </div>
-                        <p>
-                        <div *ngIf="detailData.public_state">
-                          <input type="checkbox" id="rss_display" [(ngModel)]="detailData.recursive_public_state">{{langJson.Set_Publish_Date_Recursively[1]}}
-                        </div>
+                      <div *ngIf="detailData.public_state" class="input-group">
+                        <span class="input-group-addon">
+                          <!-- {{langJson.Japanese[1]}} -->
+                          {{langJson.Date[1]}}：
+                        </span>
+                        <input type="text" class="form-control" id="datepicker" [placeholder]="langJson.example" [(ngModel)]="detailData.public_date">
+                      </div>
+                      <p>
+                      <div *ngIf="detailData.public_state">
+                        <input type="checkbox" id="rss_display" [(ngModel)]="detailData.recursive_public_state">{{langJson.Set_Publish_Date_Recursively[1]}}
+                      </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 新しい公開用モーダルの追加 -->
+              <div class="Mymodal" id="ConfirmModalComponent2" [style.display]="modalAberto2.status">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel2">
+                      WARNING
+                    </h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>
+                      <span class="glyphicon glyphicon-warning-sign"></span>
+                    </p>
+                    {{langJson.Harvest_check_message[1]}}
+                    <div>
+                      <!--モーダル内チェックボックス-->
+                      <input type="checkbox" id="modalCheckbox2" (change)="onModalCheckboxChange2($event)">
+                      <label for="modalCheckbox2">{{langJson.Harvest_checkbox[1]}}</label>
+                    </div>
+                  </div>
+                  <div class="modal-footer modFooter">
+                    <!--変更(OK)ボタン-->
+                    <button type="button" class="btn btn-info enable_button" data-dismiss="modal" (click)="enable2()" [disabled]="!isCheckboxChecked2">
+                      {{langJson.btn_message_enable[1]}}
+                    </button>
+                    <!--閉じるボタン-->
+                    <button type="button" class="btn btn-info cancel-button" data-dismiss="modal" (click)="cancel2()">
+                      {{langJson.btn_message_close[1]}}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -264,6 +296,7 @@
                 </div>
               </div>
               <!-- OAI-PMH -->
+              <!-- インデックスの公開ロック機能実装 -->
               <div class="panel panel-default">
                 <div class="panel-body">
                   <div class="row">
@@ -273,13 +306,45 @@
                     <div class="col-sm-10 col-md-10">
                       <div class="checkbox">
                         <label>
-                          <input type="checkbox" id="rss_display" [(ngModel)]="detailData.harvest_public_state">
+                          <input type="checkbox" id="rss_display" [(ngModel)]="detailData.harvest_public_state" (change)="onCheckboxChange($event)">
                           {{langJson.Open_To_Public[1]}}
                         </label>
                         <p>
                           <span class="text-danger">※{{langJson.Harvest_Message[1]}}</span>
+                        </p>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 2024/07/31 モーダルウィンドウの追加 -->
+              <div class="Mymodal" id="CofirmModalComponent" [style.display]="modalAberto.status">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">
+                      WARNING
+                    </h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>
+                      <span class="glyphicon glyphicon-warning-sign"></span>
+                    </p>
+                    {{langJson.Harvest_check_message[1]}}
+                    <div>
+                      <!--モーダル内チェックボックス-->
+                      <input type="checkbox" id="modalCheckbox" (change)="onModalCheckboxChange($event)">
+                      <label for="modalCheckbox">{{langJson.Harvest_checkbox[1]}}</label>
+                    </div>
+                  </div>
+                  <div class="modal-footer modFooter">
+                    <!--変更(OK)ボタン-->
+                    <button type="button" class="btn btn-info enable_button" data-dismiss="modal" (click)="enable()" [disabled]="!isCheckboxChecked">
+                      {{langJson.btn_message_enable[1]}}
+                    </button>
+                    <!--閉じるボタン-->
+                    <button type="button" class="btn btn-info cancel-button" data-dismiss="modal" (click)="cancel()">
+                      {{langJson.btn_message_close[1]}}
+                    </button>
                   </div>
                 </div>
               </div>
