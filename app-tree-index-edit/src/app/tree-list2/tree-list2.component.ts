@@ -87,6 +87,8 @@ export class TreeList2Component implements OnInit {
     display_format: '1',
     thumbnail_delete_flag: false,
     image_name: '',
+    index_url: '',
+    cnri: '',
     harvest_public_state2: false
   };
   public roleModel = {
@@ -155,6 +157,8 @@ export class TreeList2Component implements OnInit {
     Err_File_Ext: [],
     Enter_Required_Fields: [],
     Required_Input: [],
+    IndexURL: [],
+    CNRI: [],
     //インデックスの公開ロック機能追加
     Harvest_check_message: [],
     Harvest_checkbox:[],
