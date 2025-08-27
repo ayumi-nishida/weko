@@ -68,7 +68,7 @@
                       </ng-select>
                     </td>
                     <td>
-                      <button *ngIf="data.scheme != 'WEKO'" [disabled]="control.edit_flag[i] == true" type="button" class="btn btn-primary edit-button" (click)="edit(i)">
+                      <button *ngIf="data.scheme != 'WEKO'" [disabled]="control.edit_flag[i] == true || !isEditable(data.communityIds)" type="button" class="btn btn-primary edit-button" (click)="edit(i)">
                         <span class="glyphicon glyphicon-edit"></span>
                         {{langJson.Author_Button_Edit[1]}}
                       </button>

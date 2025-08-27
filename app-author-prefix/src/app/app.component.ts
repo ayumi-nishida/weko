@@ -53,6 +53,7 @@ export class AppComponent implements OnInit {
   public otherIndex: number = 0;
   public schemeOtherValue: string = "";
   public selectedScheme: string = "";
+  public isAdmin = false;
 
   constructor(private http: Http, ) { }
 
@@ -150,7 +151,8 @@ export class AppComponent implements OnInit {
         alert('Successfully deleted');
       }).catch(
         res => {
-          alert(res.msg);
+          const body = JSON.parse(res._body);
+          alert(body.msg);
         });
     window.location.reload();
   }
@@ -161,6 +163,7 @@ export class AppComponent implements OnInit {
     console.log(this.new_settings);
     this.new_settings.scheme = this.selectedScheme != this.controlledVocabularies[this.otherIndex] ?
       this.selectedScheme.trim() : this.schemeOtherValue.trim();
+    this.new_settings.communityIds = this.new_settings.communityIds ? this.new_settings.communityIds.map(com => com.id) : [];
     let validation_res = this.validation(this.new_settings);
     if (validation_res != 'OK') {
       alert(validation_res);
@@ -214,7 +217,8 @@ export class AppComponent implements OnInit {
   getManagedCommunities() {
     this.getDataOfManagedCommunities().then(
       res => {
-        this.managedCommunities = res.map(com => ({ id: com, name: com }));
+        this.isAdmin = !!res.isAdmin;
+        this.managedCommunities = res.communityIds.map(com => ({ id: com, name: com }));
         console.log(res);
       }
     ).catch();
@@ -323,6 +327,17 @@ export class AppComponent implements OnInit {
       };
     });
   }
+
+  isEditable(communityIds: string[]): boolean {
+    if (this.isAdmin) {
+        return true;
+    }
+    if (communityIds.length === 0) {
+        return false;
+    }
+    return communityIds.every(id => this.managedCommunities.some(com => com.id === id));
+  }
+
   /**
    * エラー処理
    */
