@@ -4,6 +4,7 @@ import { FormsModule }   from '@angular/forms';
 import { HttpModule }    from '@angular/http';
 import { AppComponent } from './app.component';
 import { Route } from '@angular/compiler/src/core';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 @NgModule({
@@ -13,7 +14,8 @@ import { Route } from '@angular/compiler/src/core';
   imports: [
     BrowserModule,
     FormsModule,
-    HttpModule
+    HttpModule,
+    NgSelectModule
   ],
   exports:[],
   providers: [],

@@ -15,6 +15,7 @@ export class AppComponent implements OnInit {
     Affiliation_Name: [],
     Affiliation_Scheme: [],
     Affiliation_URL: [],
+    Affiliation_Community: [],
     Author_Control: [],
     Author_Button_Edit: [],
     Author_Button_Save: [],
@@ -37,17 +38,22 @@ export class AppComponent implements OnInit {
       url_temp: "",
       scheme_temp: "",
       otherScheme_temp: "",
+      communityIds: [],
+      communityIds_temp: { id: string; name: string; disabled?: boolean }[];
     }
   ];
   public new_settings: any = {
     name: "",
     url: "",
-    scheme: ""
+    scheme: "",
+    communityIds: []
   };
   public controlledVocabularies = [];
+  public managedCommunities = [];
   public otherIndex: number = 0;
   public schemeOtherValue: string = "";
   public selectedScheme: string = "";
+  public isAdmin = false;
 
   constructor(private http: Http, ) { }
 
@@ -57,6 +63,7 @@ export class AppComponent implements OnInit {
   ngAfterViewInit() {
     this.getAuthorsAffiliationSettings();
     this.getAffiliationScheme();
+    this.getManagedCommunities();
   }
 
   /**
@@ -94,6 +101,7 @@ export class AppComponent implements OnInit {
     console.log(this.displayData[index]);
     this.displayData[index].name_temp = this.displayData[index].name;
     this.displayData[index].url_temp = this.displayData[index].url;
+    this.setSelectedCommunity(index);
     if (this.controlledVocabularies.indexOf(this.displayData[index].scheme) < 0) {
       this.displayData[index].scheme_temp = this.controlledVocabularies[this.otherIndex];
       this.displayData[index].otherScheme_temp = this.displayData[index].scheme;
@@ -107,10 +115,11 @@ export class AppComponent implements OnInit {
    */
   update(index: any) {
     console.log(this.displayData[index]);
-    let data = { id: -1, name: "", url: "", scheme: "" };
+    let data = { id: -1, name: "", url: "", scheme: "", communityIds: [] };
     data.id = this.displayData[index].id;
     data.name = this.displayData[index].name_temp;
     data.url = this.displayData[index].url_temp;
+    data.communityIds = this.displayData[index].communityIds_temp.map(com => com.id);
     data.scheme = this.displayData[index].scheme_temp != this.controlledVocabularies[this.otherIndex] ?
       this.displayData[index].scheme_temp.trim() : this.displayData[index].otherScheme_temp.trim();
     let validation_res = this.validation(data);
@@ -153,6 +162,7 @@ export class AppComponent implements OnInit {
     console.log(this.new_settings);
     this.new_settings.scheme = this.selectedScheme != this.controlledVocabularies[this.otherIndex] ?
       this.selectedScheme.trim() : this.schemeOtherValue.trim();
+    this.new_settings.communityIds = this.new_settings.communityIds ? this.new_settings.communityIds.map(com => com.id) : [];
     let validation_res = this.validation(this.new_settings);
     if (validation_res != 'OK') {
       alert(validation_res);
@@ -185,6 +195,7 @@ export class AppComponent implements OnInit {
           this.displayData[i].name_temp = this.displayData[i].name;
           this.displayData[i].url_temp = this.displayData[i].url;
           this.displayData[i].scheme_temp = this.displayData[i].scheme;
+          this.setSelectedCommunity(i);
         }
       }
     ).catch();
@@ -201,6 +212,17 @@ export class AppComponent implements OnInit {
       }
     ).catch();
   }
+
+  getManagedCommunities() {
+    this.getDataOfManagedCommunities().then(
+      res => {
+        this.isAdmin = !!res.isAdmin;
+        this.managedCommunities = res.communityIds.map(com => ({ id: com, name: com }));
+        console.log(res);
+      }
+    ).catch();
+  }
+
   /**
    * call web api (get author affiliation settings)
    */
@@ -225,6 +247,17 @@ export class AppComponent implements OnInit {
       .then(response => response.json() as any)
       .catch(this.handleError);
   }
+
+  getDataOfManagedCommunities() {
+    var urlArr = window.location.href.split('/');
+    const url = urlArr[0] + "//" + urlArr[2] + "/api/authors/managed_communities";
+    return this.http
+      .get(url)
+      .toPromise()
+      .then(response => response.json() as any)
+      .catch(this.handleError);
+  }
+
   /**
    * call web api (update author affiliation settings)
    */
@@ -283,6 +316,27 @@ export class AppComponent implements OnInit {
     }
     return 'OK';
   }
+
+  setSelectedCommunity(index) {
+    this.displayData[index].communityIds_temp = this.displayData[index].communityIds.map(id => {
+      return {
+        id: id,
+        name: id,
+        disabled: !this.managedCommunities.map(com => com.id).includes(id)
+      };
+    });
+  }
+
+  isEditable(communityIds: string[]): boolean {
+    if (this.isAdmin) {
+        return true;
+    }
+    if (communityIds.length === 0) {
+        return false;
+    }
+    return communityIds.every(id => this.managedCommunities.some(com => com.id === id));
+  }
+
   /**
    * エラー処理
    */
