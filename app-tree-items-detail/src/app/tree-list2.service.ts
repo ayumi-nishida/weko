@@ -62,6 +62,9 @@ export class TreeList2Service {
         hrl = hostUrl+"/api/tree?action=browsing&community="+ comm_ide;
       }
 
+    }else if(urlArr[3] == "admin"){
+        hrl = hostUrl+"/api/tree";
+
     }else{
       if(moreNodes != null){
         hrl = hostUrl+"/api/tree?action=browsing&more_ids="+ moreNodes;
