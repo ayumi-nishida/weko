@@ -120,6 +120,26 @@
               <div class="panel panel-default">
                 <div class="panel-body">
                   <div class="row">
+                    <div class="col-sm-2 col-md-2">{{langJson.IndexURL[1]}}</div>
+                    <div class="col-sm-10 col-md-10">
+                      <input type="text" class="form-control" id="inputIndexURL" [(ngModel)]="detailData.index_url" readonly>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-body">
+                  <div class="row">
+                    <div class="col-sm-2 col-md-2">{{langJson.CNRI[1]}}</div>
+                    <div class="col-sm-10 col-md-10">
+                      <input type="text" class="form-control" id="inputCNRI" [(ngModel)]="detailData.cnri" readonly>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel panel-default">
+                <div class="panel-body">
+                  <div class="row">
                     <div class="col-sm-2 col-md-2">{{langJson.Comment[1]}}</div>
                     <div class="col-sm-10 col-md-10">
                       <textarea class="form-control" rows="3" id="inputComment" [(ngModel)]="detailData.comment"></textarea>
