@@ -24,9 +24,9 @@ export class TreeList2Service {
     .then(response => response.json().data as any[])
     .catch(this.handleError);
   };
-  
+
  /**
-  *最新tree情報を取得する 
+  *最新tree情報を取得する
  */
   getTreeInfo():Promise<any[]>{
     let community_id = "";
@@ -34,13 +34,13 @@ export class TreeList2Service {
     if(community != null) {
       community_id = community.innerText;
     }
-    
+
     var urlArr = window.location.href.split('/');
     let url= urlArr[0]+"//"+urlArr[2]+"/api/tree/"+urlArr[urlArr.length-1];
     if (community_id !=""){
-      url = urlArr[0]+"//"+urlArr[2]+"/api/tree/"+urlArr[urlArr.length-1]+"?community="+community_id;
+      url = urlArr[0]+"//"+urlArr[2]+"/api/tree/"+urlArr[urlArr.length-1]+"?c="+community_id;
     }
-    
+
     //APIからtree情報を取得する
     return this.http.get(url)
     .toPromise()
@@ -108,7 +108,7 @@ export class TreeList2Service {
    * エラー処理
    */
   private handleError(error: any): Promise<any> {
-    console.error('An error occurred', error); // 
+    console.error('An error occurred', error); //
     return Promise.reject(error.message || error);
   }
 
