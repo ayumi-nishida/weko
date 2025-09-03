@@ -233,13 +233,13 @@
                     {{langJson.Author_Community[1]}}
                   </div>
                   <div class="col-sm-11 col-md-11">
-                    <ng-container *ngFor="let community of authorJsonObj.community_ids; let i = index">
+                    <ng-container *ngFor="let community of authorJsonObj.communityIds; let i = index">
                       <div class="">
                         <div class="col-sm-12 col-md-12 divBottom">
                           <div class="col-sm-11 col-md-11">
-                            <select class="form-control" [(ngModel)]="authorJsonObj.community_ids[i]" [disabled]="!isCommunitySelectable(i)">
+                            <select class="form-control" [(ngModel)]="authorJsonObj.communityIds[i]" [disabled]="!isCommunitySelectable(i)">
                               <option *ngFor="let c of getAvailableCommunities(i)" [value]="c.id">{{c.name}}</option>
-                              <option *ngIf="authorJsonObj.community_ids[i] && !isCommunitySelectable(i)" [value]="authorJsonObj.community_ids[i]">{{authorJsonObj.community_ids[i]}}</option>
+                              <option *ngIf="authorJsonObj.communityIds[i] && !isCommunitySelectable(i)" [value]="authorJsonObj.communityIds[i]">{{authorJsonObj.communityIds[i]}}</option>
                             </select>
                           </div>
                           <div class="col-sm-1 col-md-1">
@@ -255,7 +255,7 @@
                     </ng-container>
                     <div class="row ">
                       <div class="col-sm-11 col-md-11 textRight">
-                        <button type="button" class="btn btn-link" (click)="addCommunity()">+&nbsp;
+                        <button type="button" class="btn btn-link" (click)="addCommunityIds()">+&nbsp;
                           {{langJson.Author_Add_Community[1]}}
                         </button>
                       </div>

@@ -96,7 +96,7 @@ export class AppComponent implements OnInit {
         ]
       }
     ],
-    community_ids: [""]
+    communityIds: [""]
   }
   //氏名の入力方法
   // set data of name List
@@ -259,10 +259,10 @@ export class AppComponent implements OnInit {
         this.authorJsonObj.emailInfo.push(data);
       }
     }
-    if (info.hasOwnProperty("community_ids")) {
-      this.authorJsonObj.community_ids = [];
-      for (let data of info.community_ids) {
-        this.authorJsonObj.community_ids.push(data);
+    if (info.hasOwnProperty("communityIds")) {
+      this.authorJsonObj.communityIds = [];
+      for (let data of info.communityIds) {
+        this.authorJsonObj.communityIds.push(data);
       }
     }
     if (info.hasOwnProperty("affiliationInfo")) {
@@ -341,10 +341,10 @@ export class AppComponent implements OnInit {
     }
   }
   delCommunityData(index: any) {
-    if (this.authorJsonObj.community_ids.length == 1) {
-      this.authorJsonObj.community_ids.splice(index, 1, "");
+    if (this.authorJsonObj.communityIds.length == 1) {
+      this.authorJsonObj.communityIds.splice(index, 1, "");
     } else {
-      this.authorJsonObj.community_ids.splice(index, 1)
+      this.authorJsonObj.communityIds.splice(index, 1)
     }
   }
 
@@ -427,9 +427,9 @@ export class AppComponent implements OnInit {
     //行目を追加
     this.authorJsonObj.emailInfo.push(subEmailInfo);
   }
-  addCommunity() {
+  addCommunityIds() {
     //子対象を取得する
-    this.authorJsonObj.community_ids.push("");
+    this.authorJsonObj.communityIds.push("");
   }
 
   /**
@@ -745,9 +745,9 @@ export class AppComponent implements OnInit {
         jsonStrCopy.affiliationInfo.splice(affiliationIndex, 1);
       }
     }
-    for (let i = 0; i < jsonStrCopy.community_ids.length; i++) {
-      if (jsonStrCopy.community_ids[i] == "") {
-        jsonStrCopy.community_ids.splice(i, 1);
+    for (let i = 0; i < jsonStrCopy.communityIds.length; i++) {
+      if (jsonStrCopy.communityIds[i] == "") {
+        jsonStrCopy.communityIds.splice(i, 1);
       }
     }
     return jsonStrCopy;
@@ -941,12 +941,12 @@ export class AppComponent implements OnInit {
   }
   
   getAvailableCommunities(index: number): any[] {
-    const selectedIds = this.authorJsonObj.community_ids.filter((_, i) => i !== index);
+    const selectedIds = this.authorJsonObj.communityIds.filter((_, i) => i !== index);
     return this.communityOptions.filter(c => !selectedIds.includes(c.id));
   }
 
   isCommunitySelectable(index: number): boolean {
-    const selectedId = this.authorJsonObj.community_ids[index];
+    const selectedId = this.authorJsonObj.communityIds[index];
     if (selectedId === "") {
       return true;
     }

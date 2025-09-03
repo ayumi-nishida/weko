@@ -382,7 +382,7 @@ export class AppComponent implements OnInit {
           flgFrom:false,
           itemCnt:0,
           pk_id:"",
-          community_ids: []
+          communityIds: []
         };
         subData.id = data._id;
 
@@ -423,8 +423,8 @@ export class AppComponent implements OnInit {
           }
           subData.emailInfo.email = emailInfo;
         }
-        if (data._source.hasOwnProperty("community_ids")) {
-          subData.community_ids = data._source.community_ids;
+        if (data._source.hasOwnProperty("communityIds")) {
+          subData.communityIds = data._source.communityIds;
         }
         subData.pk_id = data._source.pk_id;
         this.displayData.push(subData);
