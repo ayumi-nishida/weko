@@ -334,7 +334,7 @@ export class AppComponent implements OnInit {
     if (communityIds.length === 0) {
         return false;
     }
-    return communityIds.every(id => this.managedCommunities.some(com => com.id === id));
+    return communityIds.some(id => this.managedCommunities.some(com => com.id === id));
   }
 
   /**
@@ -342,7 +342,8 @@ export class AppComponent implements OnInit {
    */
   private handleError(error: any): Promise<any> {
     console.error('An error occurred', error); //
-    return Promise.reject(error.message || error);
+    const body = JSON.parse(error._body);
+    return Promise.reject(body || error);
   }
 }
 
