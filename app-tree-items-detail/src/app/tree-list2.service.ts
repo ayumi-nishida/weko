@@ -48,18 +48,18 @@ export class TreeList2Service {
         }
       }
       if(moreNodes != null){
-        hrl = hostUrl + "/api/tree?action=browsing&community="+comm_ide+"&more_ids="+moreNodes;
+        hrl = hostUrl + "/api/tree?action=browsing&c="+comm_ide+"&more_ids="+moreNodes;
       }else{
-        hrl = hostUrl + "/api/tree?action=browsing&community="+comm_ide ;
+        hrl = hostUrl + "/api/tree?action=browsing&c="+comm_ide ;
       }
 
     }else if($("#community")!=undefined && $("#community").val()){
       comm_ide = $("#community").val();
       console.log(comm_ide)
       if(moreNodes != null){
-        hrl = hostUrl+"/api/tree?action=browsing&community="+comm_ide+"&more_ids="+moreNodes ;
+        hrl = hostUrl+"/api/tree?action=browsing&c="+comm_ide+"&more_ids="+moreNodes ;
       }else{
-        hrl = hostUrl+"/api/tree?action=browsing&community="+ comm_ide;
+        hrl = hostUrl+"/api/tree?action=browsing&c="+ comm_ide;
       }
 
     }else if(urlArr[3] == "admin"){
@@ -102,14 +102,14 @@ export class TreeList2Service {
     search = this.insertParam(search, "search_type", "2")
     search = this.insertParam(search, "q", String(nodeId))
     // search = this.insertParam(search, "time", String(currentTime))
-    
+
     let data = {
       "dlt_dis_num_selected": "",
       "dlt_index_sort_selected": "",
       "dlt_keyword_sort_selected": "" };
     await reponse.then(reponse => {
       if (reponse.status === 1) {
-        data = { 
+        data = {
           "dlt_dis_num_selected": reponse.data.dlt_dis_num_selected,
           "dlt_index_sort_selected": reponse.data.dlt_index_sort_selected,
           "dlt_keyword_sort_selected": reponse.data.dlt_keyword_sort_selected, };
@@ -135,7 +135,7 @@ export class TreeList2Service {
 
     if($("#community")!=undefined && $("#community").val()){
       let community = $("#community").val();
-      search = this.insertParam(search, "community", String(community))
+      search = this.insertParam(search, "c", String(community))
     }
     if($("#item_management_custom_sort").length!=0){
       let geturl = hostUrl + "/admin/items/search?search_type=2&q="+ nodeId+"&item_management=sort&sort=custom_sort";
