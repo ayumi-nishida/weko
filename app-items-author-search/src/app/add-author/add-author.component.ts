@@ -263,6 +263,9 @@ export class AddAuthorComponent implements OnInit {
         this.isAdmin = !!res.isAdmin;
         this.communityOptions = res.communityIds.map(com => ({ id: com, name: com }));
         this.activityCommunityId = res.activityCommunityId;
+        if (this.activityCommunityId && !this.communityOptions.some(c => c.id === this.activityCommunityId)) {
+          this.communityOptions.push({ id: this.activityCommunityId, name: this.activityCommunityId });
+        }
         if (this.activityCommunityId ) {
           this.authorJsonObj.communityIds = [this.activityCommunityId];
         }

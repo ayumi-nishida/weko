@@ -209,9 +209,8 @@
                       <div class="">
                         <div class="col-sm-12 col-md-12 divBottom remove-padding-right">
                           <div class="col-sm-11 col-md-11 remove-padding-right">
-                            <select class="form-control" [(ngModel)]="authorJsonObj.communityIds[i]" [disabled]="!isCommunitySelectable(i)">
+                            <select class="form-control" [(ngModel)]="authorJsonObj.communityIds[i]">
                               <option *ngFor="let c of getAvailableCommunities(i)" [value]="c.id">{{c.name}}</option>
-                              <option *ngIf="authorJsonObj.communityIds[i] && !isCommunitySelectable(i)" [value]="authorJsonObj.communityIds[i]">{{authorJsonObj.communityIds[i]}}</option>
                             </select>
                           </div>
                           <div class="col-sm-1 col-md-1">
