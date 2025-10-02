@@ -23,6 +23,8 @@ export class AppComponent implements OnInit {
     Author_Add_Author_ID: [],
     Author_EMail: [],
     Author_Add_EMail: [],
+    Author_Community: [],
+    Author_Add_Community: [],
     Author_Identifier: [],
     Author_Add_Identifier: [],
     Author_Affiliation_Name: [],
@@ -93,7 +95,8 @@ export class AppComponent implements OnInit {
           }
         ]
       }
-    ]
+    ],
+    communityIds: [""]
   }
   //氏名の入力方法
   // set data of name List
@@ -147,6 +150,9 @@ export class AppComponent implements OnInit {
     }
   ];
 
+  public communityOptions: any[] = [];
+  public isAdmin = false;
+
   public placeholderForDate: string ="yyyy-mm-dd";
 
   constructor(private http: Http,
@@ -156,6 +162,7 @@ export class AppComponent implements OnInit {
     this.setI18n();
     this.getAuthorsPrefixSettings();
     this.getAuthorsAffiliationSettings();
+    this.getManagedCommunities();
   }
   ngAfterViewInit() {
     this.getAuthorData();
@@ -213,6 +220,16 @@ export class AppComponent implements OnInit {
       }
     ).catch()
   }  
+
+  getManagedCommunities() {
+    this.getDataOfManagedCommunities().then(
+      res => {
+        this.isAdmin = !!res.isAdmin;
+        this.communityOptions = res.communityIds.map(com => ({ id: com, name: com }));
+      }
+    ).catch();
+  }
+
   /**
    *
    */
@@ -240,6 +257,12 @@ export class AppComponent implements OnInit {
       this.authorJsonObj.emailInfo = [];
       for (let data of info.emailInfo) {
         this.authorJsonObj.emailInfo.push(data);
+      }
+    }
+    if (info.hasOwnProperty("communityIds")) {
+      this.authorJsonObj.communityIds = [];
+      for (let data of info.communityIds) {
+        this.authorJsonObj.communityIds.push(data);
       }
     }
     if (info.hasOwnProperty("affiliationInfo")) {
@@ -317,6 +340,14 @@ export class AppComponent implements OnInit {
       this.authorJsonObj.emailInfo.splice(index, 1)
     }
   }
+  delCommunityData(index: any) {
+    if (this.authorJsonObj.communityIds.length == 1) {
+      this.authorJsonObj.communityIds.splice(index, 1, "");
+    } else {
+      this.authorJsonObj.communityIds.splice(index, 1)
+    }
+  }
+
   /**
    * identifierを削除する
    * ＠@param 削除する位置情報
@@ -396,6 +427,11 @@ export class AppComponent implements OnInit {
     //行目を追加
     this.authorJsonObj.emailInfo.push(subEmailInfo);
   }
+  addCommunityIds() {
+    //子対象を取得する
+    this.authorJsonObj.communityIds.push("");
+  }
+
   /**
    * 所属機関識別子情報を追加する
    * ＠@param 追加する位置情報
@@ -709,6 +745,11 @@ export class AppComponent implements OnInit {
         jsonStrCopy.affiliationInfo.splice(affiliationIndex, 1);
       }
     }
+    for (let i = 0; i < jsonStrCopy.communityIds.length; i++) {
+      if (jsonStrCopy.communityIds[i] == "") {
+        jsonStrCopy.communityIds.splice(i, 1);
+      }
+    }
     return jsonStrCopy;
   }
   /**
@@ -811,6 +852,16 @@ export class AppComponent implements OnInit {
       .then(response => response.json() as any)
       .catch(this.handleError);
   }
+
+  getDataOfManagedCommunities() {
+    var urlArr = window.location.href.split('/');
+    const url = urlArr[0] + "//" + urlArr[2] + "/api/authors/managed_communities";
+    return this.http
+      .get(url)
+      .toPromise()
+      .then(response => response.json() as any)
+      .catch(this.handleError);
+  }
   /**
    * author confirm identifier url
    */
@@ -889,6 +940,18 @@ export class AppComponent implements OnInit {
     return 'OK';
   }
   
+  getAvailableCommunities(index: number): any[] {
+    const selectedIds = this.authorJsonObj.communityIds.filter((_, i) => i !== index);
+    return this.communityOptions.filter(c => !selectedIds.includes(c.id));
+  }
+
+  isCommunitySelectable(index: number): boolean {
+    const selectedId = this.authorJsonObj.communityIds[index];
+    if (selectedId === "") {
+      return true;
+    }
+    return this.communityOptions.some(c => c.id === selectedId);
+  }
   /**
    * エラー処理
    */

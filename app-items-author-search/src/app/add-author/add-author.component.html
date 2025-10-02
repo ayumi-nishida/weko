@@ -194,7 +194,47 @@
                   </div>
                 </div>
               </div>
+              <br>
+              <br>
               <!--email end  -->
+              <!--community start-->
+              <div class="row">
+                <div class="col-sm-12 col-md-12 remove-padding-right">
+                  <div class="col-sm-1 col-md-1 textRight remove-padding-right">
+                    <!-- Community -->
+                    {{langJson.Author_Community[1]}}
+                  </div>
+                  <div class="col-sm-11 col-md-11 remove-padding-right remove-padding-left">
+                    <ng-container *ngFor="let community of authorJsonObj.communityIds; let i = index">
+                      <div class="">
+                        <div class="col-sm-12 col-md-12 divBottom remove-padding-right">
+                          <div class="col-sm-11 col-md-11 remove-padding-right">
+                            <select class="form-control" [(ngModel)]="authorJsonObj.communityIds[i]">
+                              <option *ngFor="let c of getAvailableCommunities(i)" [value]="c.id">{{c.name}}</option>
+                            </select>
+                          </div>
+                          <div class="col-sm-1 col-md-1">
+                            <div *ngIf="isCommunitySelectable(i)">
+                              <button type="button" class="close delButton" (click)="delCommunityData(i)">
+                                <span class="glyphicon glyphicon-remove"></span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p></p>
+                    </ng-container>
+                    <div class="row ">
+                      <div class="col-sm-11 col-md-11 textRight remove-padding-right">
+                        <button type="button" class="btn btn-link" (click)="addCommunity()">+&nbsp;
+                          {{langJson.Author_Add_Community[1]}}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--community end-->
               <br>
               <!-- 所属情報　start -->
               <!-- for start -->

@@ -19,6 +19,7 @@
       "testTsconfig": "tsconfig.spec.json",
       "prefix": "app",
       "styles": [
+        "../node_modules/@ng-select/ng-select/themes/default.theme.css",
         "styles.css"
       ],
       "scripts": [

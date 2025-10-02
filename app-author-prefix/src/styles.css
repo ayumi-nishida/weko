@@ -60,3 +60,7 @@
 .divBottom{
     margin-bottom: 10px;
 }
+
+.ng-select .ng-clear {
+  display: none !important;
+}

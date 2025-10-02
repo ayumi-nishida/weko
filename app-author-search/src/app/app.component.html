@@ -83,10 +83,10 @@
               <ng-container *ngFor="let data of displayData;let i=index">
                 <tr class="">
                   <td class="alignCenter">
-                    <input type="checkbox" name="flgFrom" [(ngModel)]="data.flgFrom" (ngModelChange)="selectAuthor()">
+                    <input type="checkbox" name="flgFrom" [(ngModel)]="data.flgFrom" (ngModelChange)="selectAuthor()" [disabled]="!isEditable(data.communityIds)">
                   </td>
                   <td class="alignCenter">
-                    <input type="radio" name="authorRadio" value="data.id"  [checked]="gatherId == data.id" (click)="gatherId=data.id; selectAuthor()">
+                    <input type="radio" name="authorRadio" value="data.id"  [checked]="gatherId == data.id" (click)="gatherId=data.id; selectAuthor()" [disabled]="!isEditable(data.communityIds)">
                   </td>
                   <td [innerHTML]="data.authorNameInfo.authorName">
                   </td>
@@ -96,7 +96,7 @@
                       {{data.itemCnt}}
                   </td>
                   <td class="textRight">
-                    <button type="button" class="btn btn-primary edit-button" (click)="update(i)">
+                    <button type="button" class="btn btn-primary edit-button" (click)="update(i)" [disabled]="!isEditable(data.communityIds)">
                       <span class="glyphicon glyphicon-edit"></span>
                       {{langJson.Author_Button_Edit[1]}}
                     </button>
