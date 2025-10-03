@@ -13,6 +13,16 @@
               </h5>
             </div>
             <div class="panel-body">
+              <div class="row" *ngIf="displayPkId">
+                <div class="col-sm-12 col-md-12">
+                  <div class="col-sm-1 col-md-1 textRight">
+                    pk_id 
+                  </div>
+                  <div class="col-sm-11 col-md-11">
+                  : {{authorJsonObj.pk_id}}
+                  </div>
+                </div>
+              </div>
               <!-- 氏名　start -->
               <div class="row">
                 <div class="col-sm-12 col-md-12">
@@ -116,7 +126,7 @@
                             </select>
                           </div>
                           <div class="col-sm-5 col-md-5">
-                            <input [disabled]="authorIdData.idType == 1" type="text" class="form-control" placeholder="" [(ngModel)]="authorIdData.authorId">
+                            <input type="text" class="form-control" placeholder="" [(ngModel)]="authorIdData.authorId">
                           </div>
                           <div class="col-sm-2 col-md-2">
                             <div class="">
@@ -212,7 +222,48 @@
                   </div>
                 </div>
               </div>
+              <br>
+              <br>
               <!--email end  -->
+              <!--community start-->
+              <div class="row">
+                <div class="col-sm-12 col-md-12">
+                  <div class="col-sm-1 col-md-1 textRight">
+                    <!-- Community -->
+                    {{langJson.Author_Community[1]}}
+                  </div>
+                  <div class="col-sm-11 col-md-11">
+                    <ng-container *ngFor="let community of authorJsonObj.communityIds; let i = index">
+                      <div class="">
+                        <div class="col-sm-12 col-md-12 divBottom">
+                          <div class="col-sm-11 col-md-11">
+                            <select class="form-control" [(ngModel)]="authorJsonObj.communityIds[i]" [disabled]="!isCommunitySelectable(i)">
+                              <option *ngFor="let c of getAvailableCommunities(i)" [value]="c.id">{{c.name}}</option>
+                              <option *ngIf="authorJsonObj.communityIds[i] && !isCommunitySelectable(i)" [value]="authorJsonObj.communityIds[i]">{{authorJsonObj.communityIds[i]}}</option>
+                            </select>
+                          </div>
+                          <div class="col-sm-1 col-md-1">
+                            <div *ngIf="isCommunitySelectable(i)">
+                              <button type="button" class="close delButton" (click)="delCommunityData(i)">
+                                <span class="glyphicon glyphicon-remove"></span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p></p>
+                    </ng-container>
+                    <div class="row ">
+                      <div class="col-sm-11 col-md-11 textRight">
+                        <button type="button" class="btn btn-link" (click)="addCommunityIds()">+&nbsp;
+                          {{langJson.Author_Add_Community[1]}}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--community end-->
               <br>
               <!-- 所属情報　start -->
               <!-- for start -->
@@ -377,7 +428,64 @@
                               </div>
                             </div>
                           </div>
-                          <!-- 所属機関名 end  -->                       
+                          <!-- 所属機関名 end  -->
+                          <!-- 所属機関所属期間　start -->
+                          <div class="row">
+                            
+                            <div class="col-sm-12 col-md-12">
+                              <div class="col-sm-1 col-md-1 textRight">
+                              <!-- 所属機関所属期間 -->
+                                {{langJson.Author_Affiliation_Period[1]}}
+                              </div>
+                              <div class="col-sm-11 col-md-11">
+                                <!-- for start -->
+                                <ng-container *ngFor="let affiliationPeriodData of affiliationData.affiliationPeriodInfo;let affiliationPeriodIndex=index">
+                                  <div class="">
+                                    <div class="col-sm-12 col-md-12 divBottom">
+                                      <div class="col-sm-2 col-md-2">
+                                      </div>
+                                      <div class="col-sm-1 col-md-1">
+                                      </div>
+                                      <div class="col-sm-1 col-md-1 textRight">
+                                        {{langJson.Author_Affiliation_Period_Start[1]}}
+                                      </div>
+                                      <div class="ccol-sm-2 col-md-2">
+                                        <input type="text" class="form-control" placeholder={{placeholderForDate}} [(ngModel)]="affiliationPeriodData.periodStart">
+                                      </div>
+                                      <div class="col-sm-1 col-md-1 textRight">
+                                      <!-- 所属機関所属期間 -->
+                                        {{langJson.Author_Affiliation_Period_End[1]}}
+                                      </div>
+                                      <div class="col-sm-2 col-md-2">
+                                        <input type="text" class="form-control" placeholder={{placeholderForDate}} [(ngModel)]="affiliationPeriodData.periodEnd">
+                                      </div>
+                                      <div class="col-sm-2 col-md-2">
+                                      </div>
+                                      <div class="col-sm-1 col-md-1">
+                                        <div>
+                                          <button type="button" class="close delButton" (click)="delAffiliationPeriodData(affiliationIndex, affiliationPeriodIndex)">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <p></p>
+                                </ng-container>
+                                <!-- 第二行目 -->
+                                <div class="row ">
+                                  <div class="col-sm-11 col-md-11 textRight">
+                                    <button type="button" class="btn btn-link" (click)="addAffiliationPeriod(affiliationIndex)">+&nbsp;
+                                      <!-- 所属機関所属期間を追加 -->
+                                      {{langJson.Author_Add_Affiliation_Period[1]}}
+                                    </button>
+                                  </div>
+                                </div>
+                                <!-- 第二行目 end-->                             
+                              </div>
+                            </div>
+                          </div>
+                          <!-- 所属機関名 end  --> 
                         </div>
                       </div>
                     </div>
@@ -421,6 +529,10 @@
                         <span class="glyphicon glyphicon-download-alt"></span>
                         {{langJson.Author_Button_Save[1]}}
                       </button>
+                      <label *ngIf="forceChangeCheck">
+                        <input type="checkbox"  [(ngModel)]="forceChangeFlag">
+                        {{langJson.Author_Force_Change_Flag[1]}}
+                      </label>
                 </div>
               </div>
               <!-- ボタン　end -->

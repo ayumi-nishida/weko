@@ -18,7 +18,7 @@ TARGETDIR=$WEKODIR/modules
 # args-check-end
 
 # copy-begin
-cp -p ./app-tree-items-detail/dist/inline.*.js    ${TARGETDIR}/invenio-communities/invenio_communities/static/js/invenio_communities/inline.bundle.js
+cp -p ./app-tree-items-detail/dist/runtime.*.js    ${TARGETDIR}/invenio-communities/invenio_communities/static/js/invenio_communities/inline.bundle.js
 cp -p ./app-tree-items-detail/dist/main.*.js      ${TARGETDIR}/invenio-communities/invenio_communities/static/js/invenio_communities/main.bundle.js
 cp -p ./app-tree-items-detail/dist/polyfills.*.js ${TARGETDIR}/invenio-communities/invenio_communities/static/js/invenio_communities/polyfills.bundle.js
 cp -p ./app-tree-items-detail/dist/styles.*.css   ${TARGETDIR}/invenio-communities/invenio_communities/static/scss/invenio_communities/styles.bundle.css
