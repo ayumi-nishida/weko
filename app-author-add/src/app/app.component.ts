@@ -1,5 +1,4 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { a } from '@angular/core/src/render3';
 import { Http, RequestOptions, Headers } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
 declare var $: any;
@@ -139,7 +138,7 @@ export class AppComponent implements OnInit {
       name: "",
       url: ""
     }
-  ]; 
+  ];
   //氏名が姓・名で入力する場合
   // set input guide
   public placeholderArry: any = [
@@ -170,7 +169,7 @@ export class AppComponent implements OnInit {
 
   /**
    * 初期値の取得
-   * 
+   *
    */
   getAuthorData() {
     let urlStr = window.location.href;
@@ -219,7 +218,7 @@ export class AppComponent implements OnInit {
         console.log(res)
       }
     ).catch()
-  }  
+  }
 
   getManagedCommunities() {
     this.getDataOfManagedCommunities().then(
@@ -563,7 +562,7 @@ export class AppComponent implements OnInit {
     identifierShowFlg: "true"
   }
   return subIdentifierInfoObj;
-  } 
+  }
 
   /**
    * affiliationName情報を返す
@@ -594,19 +593,19 @@ export class AppComponent implements OnInit {
   returnSubAffiliationInfoObj(): any {
   //所属情報
   let subAffiliationInfoObj = {
-    "identifierInfo": [], 
+    "identifierInfo": [],
     "affiliationNameInfo": [],
     "affiliationPeriodInfo": []
   }
   let subIdentifierInfoObj = this.returnSubIdentifierInfoObj();
   subAffiliationInfoObj.identifierInfo.push(subIdentifierInfoObj);
-  
+
   let subAffiliationNameInfoObj = this.returnSubAffiliationNameInfoObj();
   subAffiliationInfoObj.affiliationNameInfo.push(subAffiliationNameInfoObj);
-  
+
   let subAffiliationPeriodInfoObj = this.returnSubAffiliationPeriodInfoObj();
   subAffiliationInfoObj.affiliationPeriodInfo.push(subAffiliationPeriodInfoObj);
-  
+
   return subAffiliationInfoObj;
   }
 
@@ -640,7 +639,7 @@ export class AppComponent implements OnInit {
         }
       }
     }
-    
+
     let a = JSON.stringify(this.authorJsonObj);
     let dbJson = this.changeJson();
     let urlStr = window.location.href;
@@ -914,17 +913,17 @@ export class AppComponent implements OnInit {
         let identifierName = this.identifierOptions[i].name;
         if (identifierName in identifierReg){
           if ('minLength' in identifierReg[identifierName]){
-          minLength = identifierReg[identifierName]['minLength']; 
+          minLength = identifierReg[identifierName]['minLength'];
           }else{
             continue;
           }
           if ('maxLength' in identifierReg[identifierName]){
-            maxLength = identifierReg[identifierName]['maxLength']; 
+            maxLength = identifierReg[identifierName]['maxLength'];
           }else{
               continue;
           }
           if ('reg' in identifierReg[identifierName]){
-            reg = RegExp(identifierReg[identifierName]['reg']); 
+            reg = RegExp(identifierReg[identifierName]['reg']);
           }else{
               continue;
           }
@@ -939,7 +938,7 @@ export class AppComponent implements OnInit {
     }
     return 'OK';
   }
-  
+
   getAvailableCommunities(index: number): any[] {
     const selectedIds = this.authorJsonObj.communityIds.filter((_, i) => i !== index);
     return this.communityOptions.filter(c => !selectedIds.includes(c.id));
