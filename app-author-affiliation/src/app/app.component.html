@@ -16,6 +16,9 @@
                   <th width="">
                     {{langJson.Affiliation_URL[1]}}
                   </th>
+                  <th width="200">
+                    {{langJson.Affiliation_Community[1]}}
+                  </th>
                   <th width="140">
                     {{langJson.Author_Control[1]}}
                   </th>
@@ -51,14 +54,28 @@
                         [(ngModel)]="data.url_temp">
                     </td>
                     <td>
-                      <button [disabled]="control.edit_flag[i] == true" type="button" class="btn btn-primary edit-button" (click)="edit(i)">
+                      <ng-container *ngIf="control.edit_flag[i] == false">
+                        <ng-container *ngFor="let com of data.communityIds">
+                          <label>{{com}}</label><br>
+                        </ng-container>
+                      </ng-container>
+                      <ng-select
+                        *ngIf="control.edit_flag[i] == true"
+                        bindLabel="name"
+                        [items]="managedCommunities"
+                        [multiple]="true"
+                        [(ngModel)]="data.communityIds_temp">
+                      </ng-select>
+                    </td>
+                    <td>
+                      <button [disabled]="control.edit_flag[i] == true || !isEditable(data.communityIds)" type="button" class="btn btn-primary edit-button" (click)="edit(i)">
                         <span class="glyphicon glyphicon-edit"></span>
                         {{langJson.Author_Button_Edit[1]}}
                       </button>
                     </td>
                   </tr>
                   <tr *ngIf="control.edit_flag[i] == true">
-                    <td colspan="3" class="button-group">
+                    <td colspan="4" class="button-group">
                       <button type="button" class="btn btn-primary edit-button" (click)="update(i)">
                         <span class="glyphicon glyphicon-save"></span>
                         {{langJson.Author_Button_Save[1]}}
@@ -97,6 +114,14 @@
                   </td>
                   <td>
                       <input type="url" class="form-control" size="50" [(ngModel)]="new_settings.url">
+                  </td>
+                  <td>
+                    <ng-select
+                        [items]="managedCommunities"
+                        bindLabel="name"
+                        [multiple]="true"
+                        [(ngModel)]="new_settings.communityIds">
+                      </ng-select>
                   </td>
                   <td>
                     <button type="button" class="btn btn-light add-button" (click)="add()">

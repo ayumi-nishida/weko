@@ -132,6 +132,11 @@ export class AppComponent implements OnInit {
   public cntOfpage:number = 25;
 
   public mergeDisabled:boolean = true;
+
+  public managedCommunities = [];
+
+  public isAdmin = false;
+
   //著者統合タスク実行チェック
   public isCheckUpdateIntervalRunning:boolean = false;
 
@@ -140,6 +145,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.setI18n();
+    this.getManagedCommunities();
 
     // Show first page results upon load
     this.search(1);
@@ -387,14 +393,16 @@ export class AppComponent implements OnInit {
           emailInfo: { email: "" },
           flgFrom:false,
           itemCnt:0,
-          pk_id:""
+          pk_id:"",
+          communityIds: []
         };
         subData.id = data._id;
 
         if(this.searchJson.item_cnt.aggregations.item_count.buckets.length != 0){
           for(let cntData of this.searchJson.item_cnt.aggregations.item_count.buckets){
             let authorIdInfo = data._source.authorIdInfo;
-            if (Array.isArray(authorIdInfo) && authorIdInfo.length && cntData.key == authorIdInfo[0].authorId) {
+            let pkId = data._source.pk_id;
+            if (cntData.key == pkId) {
               subData.itemCnt = cntData.doc_count;
               break;
             }
@@ -426,6 +434,9 @@ export class AppComponent implements OnInit {
             emailInfo = emailInfo + d.email + "<br>";
           }
           subData.emailInfo.email = emailInfo;
+        }
+        if (data._source.hasOwnProperty("communityIds")) {
+          subData.communityIds = data._source.communityIds;
         }
         subData.pk_id = data._source.pk_id;
         this.displayData.push(subData);
@@ -525,6 +536,36 @@ export class AppComponent implements OnInit {
       .then(response => response.json() as any)
       .catch(this.handleError);
   }
+
+  getManagedCommunities() {
+    this.getDataOfManagedCommunities().then(
+      res => {
+        this.isAdmin = !!res.isAdmin;
+        this.managedCommunities = res.communityIds.map(com => ({ id: com, name: com }));
+      }
+    ).catch();
+  }
+
+  getDataOfManagedCommunities() {
+    var urlArr = window.location.href.split('/');
+    const url = urlArr[0] + "//" + urlArr[2] + "/api/authors/managed_communities";
+    return this.http
+      .get(url)
+      .toPromise()
+      .then(response => response.json() as any)
+      .catch(this.handleError);
+  }
+
+  isEditable(communityIds: string[]): boolean {
+    if (this.isAdmin) {
+        return true;
+    }
+    if (communityIds.length === 0) {
+        return false;
+    }
+    return communityIds.some(id => this.managedCommunities.some(com => com.id === id));
+  }
+
   /**
    * エラー処理
    */
