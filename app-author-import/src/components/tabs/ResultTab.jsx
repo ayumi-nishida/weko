@@ -39,9 +39,7 @@ class ResultTab extends React.Component {
                 [bridge_params.no_label]: key + 1,
                 [bridge_params.start_date_label]: task.start_date ? task.start_date : '',
                 [bridge_params.end_date_label]: task.end_date ? task.end_date : '',
-                [bridge_params.pk_id_label]: task.record_id || '',
-                [bridge_params.previous_weko_id_label]:task.previous_weko_id,
-                [bridge_params.new_weko_id_label]:task.new_weko_id,
+                [bridge_params.weko_id_label]: task.record_id || '',
                 [bridge_params.name_label]: task.fullname.join('\n'),
                 [bridge_params.status_label]: this.prepareDisplayStatus(task.status, task.type, task.error_id)
             }
@@ -114,8 +112,7 @@ class ResultTab extends React.Component {
                     <td>{start + key + 1}</td>
                     <td>{task.start_date ? task.start_date : ''}</td>
                     <td>{task.end_date ? task.end_date : ''}</td>
-                    <td>{task.previous_weko_id || ''}</td>
-                    <td>{task.new_weko_id || ''}</td>
+                    <td>{task.record_id || ''}</td>
                     <td>
                         {
                             task.fullname.map(name => {
@@ -157,8 +154,7 @@ class ResultTab extends React.Component {
         let renderTable;
         if (isTarget === "author_db") {
             download_method = this.handleDownload;
-            columns.push(bridge_params.previous_weko_id_label);
-            columns.push(bridge_params.new_weko_id_label);
+            columns.push(bridge_params.weko_id_label);
             columns.push(bridge_params.name_label);
             renderTable = this.renderTableItem(tasks, recordNames);
         }else if(isTarget === "id_prefix" || isTarget === "affiliation_id"){

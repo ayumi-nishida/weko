@@ -4,10 +4,7 @@ export const import_label = document.getElementById("import").value;
 export const result_label = document.getElementById("result").value;
 export const download_label = document.getElementById("download").value;
 export const no_label = document.getElementById("no").value;
-export const pk_id_label = document.getElementById("pk_id").value;
-export const current_weko_id_label = document.getElementById("current_weko_id").value;
-export const new_weko_id_label = document.getElementById("new_weko_id").value;
-export const previous_weko_id_label = document.getElementById("previous_weko_id").value;
+export const weko_id_label = document.getElementById("weko_id").value;
 export const name_label = document.getElementById("name").value;
 
 // select
