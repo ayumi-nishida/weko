@@ -38,3 +38,11 @@ variables:
     w-oa-03: request_params/w-oa-03/authors.json
     w-oa-15: request_params/w-oa-15/authors.json
   application_name: "Tavern Test"
+  mapping_test:
+    item_type_id: 41000
+    metadata_id1: item_1765329473964
+    metadata_id2: item_1765329489516
+    test_file1: test_w2025-28_1.tavern.yaml
+    test_file2: test_w2025-28_2.tavern.yaml
+    sleep_wait: 1
+    max_count: 10

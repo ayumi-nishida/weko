@@ -8,6 +8,7 @@ import pytest
 from requests import session
 import subprocess
 import yaml
+import glob
 
 from helper.config import DATABASE, USERS
 
@@ -296,14 +297,32 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     Returns:
         None
     """
-    # Prepare records
-    prepare_records()
+    test_name = test_dict.get("test_name", "")
+    if test_name == "マッピング画面表示_アイテムタイプ0件":
+        # テーブルtruncateだけ実行
+        with open('prepare_data/truncate_tables.sql', 'r', encoding='utf-8') as f:
+            script = f.read()
+            conn = psycopg2.connect(
+                dbname=DATABASE['dbname'],
+                user=DATABASE['user'],
+                password=DATABASE['password'],
+                host=DATABASE['host'],
+                port=DATABASE['port'],
+            )
+            cur = conn.cursor()
+            cur.execute(script)
+            conn.commit()
+            cur.close()
+            conn.close()
+    else:
+        # Prepare records
+        prepare_records()
 
-    # Delete all documents from item index in OpenSearch
-    delete_item_documents()
+        # Delete all documents from item index in OpenSearch
+        delete_item_documents()
 
-    # Delete all documents from author index in OpenSearch
-    delete_author_documents()
+        # Delete all documents from author index in OpenSearch
+        delete_author_documents()
 
     # Set cookie and csrf_token
     for k in variables.keys():
@@ -319,3 +338,27 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     for file in check_dir.iterdir():
         if file.is_file():
             file.unlink()
+
+@pytest.fixture
+def set_oaiserver_schema_null():
+    """oaiserver_schemaのxsdカラムを一時的に'null'にし、テスト後に元に戻す"""
+    conn = psycopg2.connect(
+        dbname=DATABASE['dbname'],
+        user=DATABASE['user'],
+        password=DATABASE['password'],
+        host=DATABASE['host'],
+        port=DATABASE['port'],
+    )
+    cur = conn.cursor()
+    # 例: schema_name='jpcoar_mapping' のxsdを'null'にする
+    schema_name = 'jpcoar_mapping'
+    cur.execute("SELECT xsd FROM oaiserver_schema WHERE schema_name = %s", (schema_name,))
+    original_xsd = cur.fetchone()[0]
+    cur.execute("UPDATE oaiserver_schema SET xsd = 'null' WHERE schema_name = %s", (schema_name,))
+    conn.commit()
+    yield
+    # テスト後に元に戻す
+    cur.execute("UPDATE oaiserver_schema SET xsd = %s WHERE schema_name = %s", (json.dumps(original_xsd), schema_name))
+    conn.commit()
+    cur.close()
+    conn.close()

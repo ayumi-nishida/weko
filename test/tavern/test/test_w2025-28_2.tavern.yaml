@@ -1,0 +1,48 @@
+test_name: マッピング登録API_重複チェック無効_システム管理者
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+  - duplicate_check
+
+stages:
+  - name: マッピング登録API_重複チェック有効
+    request:
+      url: "{host}/admin/itemtypes/mapping"
+      method: POST
+      headers:
+        Content-Type: application/json
+      verify: false
+      json: !include ../request_params/item_type_mapping/test_data/sysadmin/duplicate/mapping_duplicate_jpcoar_mapping_1.json
+    response:
+      status_code: 200
+      json:
+        msg: "Successfully saved new mapping."
+
+---
+test_name: マッピング登録API_重複チェック無効_リポジトリ管理者
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_repoadmin
+  - duplicate_check
+
+stages:
+  - name: マッピング登録API_重複チェック有効
+    request:
+      url: "{host}/admin/itemtypes/mapping"
+      method: POST
+      headers:
+        Content-Type: application/json
+      verify: false
+      json: !include ../request_params/item_type_mapping/test_data/repoadmin/duplicate/mapping_duplicate_jpcoar_v1_mapping_1.json
+    response:
+      status_code: 200
+      json:
+        msg: "Successfully saved new mapping."

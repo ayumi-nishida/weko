@@ -521,3 +521,139 @@ def assertion_error_handler(e, expect, actual):
     ))
     print("差分:\n" + diff)
     raise e
+
+def verify_option_selected(response, expected_value):
+    """
+    Verify that an <option> element with value=expected_value and selected attribute exists in the HTML.
+    Args:
+        response (requests.models.Response): response containing the HTML content
+        expected_value (str|int): expected selected option value
+    Returns:
+        None
+    """
+    soup = BeautifulSoup(response.text, "html.parser")
+    if expected_value == 41000:
+        select = soup.find("select", {"id": "item-type-lists"})
+        options = select.find_all("option") if select else []
+    else:
+        select = None
+        options = soup.find_all("option")
+
+    if not options:
+        options = soup.find_all("option")
+
+    found_selected = False
+    for option in options:
+        value = option.get("value")
+        is_selected = option.has_attr("selected")
+        if value == str(expected_value):
+            assert is_selected
+            found_selected = True
+    assert found_selected
+
+def verify_html_contains_error_message(response, test_key=None):
+    """
+    Verify that the expected error message is included in the HTML.
+    Args:
+        response (requests.models.Response): response containing the HTML content
+        test_key (str): key to determine the expected error message
+    Returns:
+        None
+    """
+    expected_message = ""
+    soup = BeautifulSoup(response.text, "html.parser")
+    if test_key == "not_itemtypes":
+        div = soup.find("div", {"class": "panel-body"})
+        expected_message = "No itemtypes"
+        assert expected_message in div.text
+    elif test_key == "itemtype_abc":
+        p = soup.find("p")
+        expected_message = "The page you are looking for could not be found."
+        assert expected_message in p.text
+    elif test_key == "400_error":
+        print("れすぽんす:", response.text)
+        title = soup.find("title")
+        expected_message = "400 Bad Request"
+        assert expected_message in title.text
+    elif test_key == "500_error":
+        h1 = soup.find("h1")
+        expected_message = "Internal server error"
+        assert expected_message in h1.text
+    elif test_key == "502_error":
+        p = soup.find("p")
+        expected_message = "Sorry, the page you are looking for is currently unavailable."
+        assert expected_message in p.text
+
+def verify_all_list_group_item_hidden(response):
+    """
+    Verify that all <li class="list-group-item"> elements in the retrieved HTML have the 'hide' class.
+    Args:
+        response (requests.models.Response): response containing the HTML content
+    Returns:
+        None
+    """
+    soup = BeautifulSoup(response.text, "html.parser")
+    items = soup.find_all("li", class_="list-group-item")
+    assert items
+    for li in items:
+        classes = li.get("class", [])
+        assert "hide" in classes
+
+def verify_schema_api_schema_name(response, schema_name=None):
+    """
+    Verify the schema API response for a specific schema name or for all schemas.
+    Args:
+        response (requests.models.Response): response from the schema API
+        schema_name (str): specific schema name to verify, or None to verify all schemas
+    Returns:
+        None
+    """
+    data = response.json()
+    conn = connect_db()
+    cur = conn.cursor()
+
+    if schema_name:
+        cur.execute("SELECT 1 FROM oaiserver_schema WHERE schema_name = %s", (schema_name,))
+        select_schema = cur.fetchone()
+        if select_schema is None:
+            assert data == {}
+        else:
+            assert list(data.keys()) == [schema_name]
+            cur.execute("SELECT xsd FROM oaiserver_schema WHERE schema_name = %s", (schema_name,))
+            row = cur.fetchone()
+            assert row is not None
+            xsd = row[0]
+            if isinstance(xsd, str):
+                xsd = json.loads(xsd)
+            xsd = remove_xsd_prefix({schema_name: xsd})[schema_name]
+            assert data[schema_name] == xsd
+    else:
+        cur.execute("SELECT schema_name, xsd FROM oaiserver_schema")
+        rows = cur.fetchall()
+        db_schema = {}
+        for name, xsd in rows:
+            if isinstance(xsd, str):
+                xsd = json.loads(xsd)
+            xsd = remove_xsd_prefix({name: xsd})[name]
+            db_schema[name] = xsd
+        assert set(data.keys()) == set(db_schema.keys())
+        for k in db_schema:
+            assert data[k] == db_schema[k]
+    cur.close()
+    conn.close()
+
+def remove_xsd_prefix(jpcoar_lists):
+    """Remove xsd prefix."""
+    jpcoar_copy = {}
+
+    def remove_prefix(jpcoar_src, jpcoar_dst):
+        for key, value in jpcoar_src.items():
+            if 'type' == key:
+                jpcoar_dst[key] = value
+                continue
+            jpcoar_dst[key.split(':').pop()] = {}
+            if isinstance(value, object):
+                remove_prefix(value, jpcoar_dst[key.split(':').pop()])
+
+    remove_prefix(jpcoar_lists, jpcoar_copy)
+    return jpcoar_copy

@@ -256,3 +256,4 @@ def request_create_author_edit_param(file_name, author_id):
         'author': register_data,
         'forceChangeFlag': False
     }
+

@@ -6,7 +6,7 @@ import random
 import string
 from urllib.parse import urlencode, urlparse
 
-from helper.config import RESOURCE_TYPE_URI, SWORD_CONFIG_FILE
+from helper.config import RESOURCE_TYPE_URI
 from helper.verify_database_helper import connect_db
 
 
@@ -392,3 +392,13 @@ def response_save_notification_token(response):
         return Box({'notification_token': token_input['value']})
     else:
         raise ValueError('Notification token not found in the response.')
+
+def response_save_selected_item_type(response):
+    print("よんだ")
+    soup = BeautifulSoup(response.text, "html.parser")
+    select = soup.find("select", {"id": "item-type-lists"})
+    selected_option = select.find("option", selected=True) if select else None
+    value = selected_option["value"] if selected_option else None
+    return {"selected_item_type": value}
+
+from bs4 import BeautifulSoup

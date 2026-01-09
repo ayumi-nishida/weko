@@ -1,0 +1,470 @@
+test_name: マッピング画面表示_アイテムタイプ0件
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+
+stages:
+  - name: マッピング画面表示_アイテムタイプ0件
+    request:
+      url: "{host}/admin/itemtypes/mapping/"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_html_contains_error_message
+        extra_kwargs:
+          test_key: not_itemtypes
+        
+---
+test_name: マッピング画面表示_正常系
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+
+stages:
+  - name: マッピング画面表示id指定なし
+    request:
+      url: "{host}/admin/itemtypes/mapping/"
+      method: GET
+      verify: false
+    response:
+      status_code: 302
+      headers:
+        Location: "{host}/admin/itemtypes/mapping/1"
+
+  - name: マッピング画面表示id指定あり
+    request:
+      url: "{host}/admin/itemtypes/mapping/41000"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_option_selected
+        extra_kwargs:
+          expected_value: 41000
+
+  - name: マッピング画面表示id指定あり_存在しないitem_type_id
+    request:
+      url: "{host}/admin/itemtypes/mapping/50000"
+      method: GET
+      verify: false
+    response:
+      status_code: 302
+      headers:
+        Location: "{host}/admin/itemtypes/mapping/1"
+
+---
+test_name: マッピング画面表示_異常系
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+
+stages:
+  - name: マッピング画面表示id指定文字列
+    request:
+      url: "{host}/admin/itemtypes/mapping/abc"
+      method: GET
+      verify: false
+    response:
+      status_code: 404
+      verify_response_with:
+        function: helper.verify_helper:verify_html_contains_error_message
+        extra_kwargs:
+          test_key: itemtype_abc
+
+---
+# test_name: マッピング画面表示_スキーマxsdnull
+
+# includes:
+#   - !include config.yaml
+
+# marks:
+#   - usefixtures:
+#     - login_sysadmin
+#     - set_oaiserver_schema_null
+
+# stages:
+#   - name: マッピング画面表示_スキーマxsdnull_id指定あり
+#     request:
+#       url: "{host}/admin/itemtypes/mapping/41000"
+#       method: GET
+#       verify: false
+#     response:
+#       status_code: 400
+#       verify_response_with:
+#         function: helper.verify_helper:verify_html_contains_error_message
+#         extra_kwargs:
+#           test_key: 400_error
+
+# ---
+# test_name: スキーマ取得_スキーマxsdnull
+
+# includes:
+#   - !include config.yaml
+
+# marks:
+#   - usefixtures:
+#     - login_sysadmin
+#     - set_oaiserver_schema_null
+
+# stages:
+#   - name: スキーマ取得_スキーマxsdnull_一覧取得
+#     request:
+#       url: "{host}/admin/itemtypes/mapping/schema"
+#       method: GET
+#       verify: false
+#     response:
+#       status_code: 500
+#       verify_response_with:
+#         function: helper.verify_helper:verify_html_contains_error_message
+#         extra_kwargs:
+#           test_key: 500_error
+
+#   - name: スキーマ取得_スキーマxsdnull_指定取得
+#     request:
+#       url: "{host}/admin/itemtypes/mapping/schema/jpcoar_mapping"
+#       method: GET
+#       verify: false
+#     response:
+#       status_code: 500
+#       verify_response_with:
+#         function: helper.verify_helper:verify_html_contains_error_message
+#         extra_kwargs:
+#           test_key: 500_error
+
+# ---
+test_name: マッピング画面表示_スキーマ指定_正常系
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+
+stages:
+  - name: マッピング画面表示_スキーマ指定_ddi_mapping
+    request:
+      url: "{host}/admin/itemtypes/mapping/41000?mapping_type=ddi_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_option_selected
+        extra_kwargs:
+          expected_value: ddi_mapping
+
+  - name: マッピング画面表示_スキーマ指定_jpcoar_v1_mapping
+    request:
+      url: "{host}/admin/itemtypes/mapping/41000?mapping_type=jpcoar_v1_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_option_selected
+        extra_kwargs:
+          expected_value: jpcoar_v1_mapping
+
+  - name: マッピング画面表示_スキーマ指定_jpcoar_mapping
+    request:
+      url: "{host}/admin/itemtypes/mapping/41000?mapping_type=jpcoar_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_option_selected
+        extra_kwargs:
+          expected_value: jpcoar_mapping
+
+  - name: マッピング画面表示_スキーマ指定_lom_mapping
+    request:
+      url: "{host}/admin/itemtypes/mapping/41000?mapping_type=lom_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_option_selected
+        extra_kwargs:
+          expected_value: lom_mapping
+
+  - name: マッピング画面表示_スキーマ指定_oai_dc_mapping
+    request:
+      url: "{host}/admin/itemtypes/mapping/41000?mapping_type=oai_dc_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_option_selected
+        extra_kwargs:
+          expected_value: oai_dc_mapping
+---
+test_name: マッピング画面表示_スキーマ指定_異常系
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+
+stages:
+  - name: マッピング画面表示_スキーマ指定_存在しないスキーマ名
+    request:
+      url: "{host}/admin/itemtypes/mapping/41000?mapping_type=invalid_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_all_list_group_item_hidden
+
+---
+test_name: 指定スキーマ取得API_正常系
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+
+stages:
+  - name: スキーマ取得API_ddi_mapping取得
+    request:
+      url: "{host}/admin/itemtypes/mapping/schema/ddi_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_schema_api_schema_name
+        extra_kwargs:
+          schema_name: ddi_mapping
+
+  - name: スキーマ取得API_jpcoar_v1_mapping取得
+    request:
+      url: "{host}/admin/itemtypes/mapping/schema/jpcoar_v1_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_schema_api_schema_name
+        extra_kwargs:
+          schema_name: jpcoar_v1_mapping
+
+  - name: スキーマ取得API_jpcoar_mapping取得
+    request:
+      url: "{host}/admin/itemtypes/mapping/schema/jpcoar_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_schema_api_schema_name
+        extra_kwargs:
+          schema_name: jpcoar_mapping
+
+  - name: スキーマ取得API_lom_mapping取得
+    request:
+      url: "{host}/admin/itemtypes/mapping/schema/lom_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_schema_api_schema_name
+        extra_kwargs:
+          schema_name: lom_mapping
+
+  - name: スキーマ取得API_oai_dc_mapping取得
+    request:
+      url: "{host}/admin/itemtypes/mapping/schema/oai_dc_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_schema_api_schema_name
+        extra_kwargs:
+          schema_name: oai_dc_mapping
+
+---
+test_name: 指定スキーマ取得API_異常系
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+  - login_required
+
+stages:
+  - name: スキーマ取得API_存在しないスキーマ名
+    request:
+      url: "{host}/admin/itemtypes/mapping/schema/invalid_mapping"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_schema_api_schema_name
+        extra_kwargs:
+          schema_name: invalid_mapping
+
+---
+test_name: 全スキーマ取得API
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+  - login_required
+
+stages:
+  - name: 全スキーマ取得API
+    request:
+      url: "{host}/admin/itemtypes/mapping/schema"
+      method: GET
+      verify: false
+    response:
+      status_code: 200
+      verify_response_with:
+        function: helper.verify_helper:verify_schema_api_schema_name
+
+---
+test_name: マッピング登録API_正常系
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+      - login_sysadmin
+  - test_test
+
+stages:
+  - name: マッピング登録API_正常系
+    request:
+      url: "{host}/admin/itemtypes/mapping"
+      method: POST
+      headers:
+        Content-Type: application/json
+      verify: false
+      json: !include ../request_params/item_type_mapping/test_data/sysadmin/success/mapping_success_jpcoar_mapping_1.json
+    response:
+      status_code: 200
+      json:
+        msg: "Successfully saved new mapping."
+
+---
+test_name: マッピング登録API_異常系
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+
+stages:
+  - name: マッピング登録API_id_null_異常系
+    request:
+      url: "{host}/admin/itemtypes/mapping"
+      method: POST
+      headers:
+        Content-Type: application/json
+      verify: false
+      json: !include ../request_params/item_type_mapping/test_data/sysadmin/error/mapping_null_ddi_mapping_1.json
+    response:
+      status_code: 400
+
+  - name: マッピング登録API_id_abc_異常系
+    request:
+      url: "{host}/admin/itemtypes/mapping"
+      method: POST
+      headers:
+        Content-Type: application/json
+      verify: false
+      json: !include ../request_params/item_type_mapping/test_data/sysadmin/error/mapping_abc_ddi_mapping_1.json
+    response:
+      status_code: 400
+
+  - name: マッピング登録API_id_欠損_異常系
+    request:
+      url: "{host}/admin/itemtypes/mapping"
+      method: POST
+      headers:
+        Content-Type: application/json
+      verify: false
+      json: !include ../request_params/item_type_mapping/test_data/sysadmin/error/mapping_noid_ddi_mapping_1.json
+    response:
+      status_code: 400
+
+  - name: マッピング登録API_Header_error_異常系
+    request:
+      url: "{host}/admin/itemtypes/mapping"
+      method: POST
+      headers:
+        Content-Type: multipart/form-data
+      verify: false
+      files:
+        file: ./request_params/w2025-28/test/mapping_41000_success_2.json
+    response:
+      status_code: 200
+      json:
+        msg: "Header Error"
+
+---
+test_name: マッピング登録API_重複チェック有効
+
+includes:
+  - !include config.yaml
+
+marks:
+  - usefixtures:
+    - login_sysadmin
+  - duplicate_check
+
+stages:
+  - name: マッピング登録API_重複チェック有効
+    request:
+      url: "{host}/admin/itemtypes/mapping"
+      method: POST
+      headers:
+        Content-Type: application/json
+      verify: false
+      json: !include ../request_params/item_type_mapping/test_data/sysadmin/duplicate/mapping_duplicate_oai_dc_mapping_1.json
+    response:
+      status_code: 200
+      json:
+        duplicate: true
+        err_items: [["テキスト1", "テキスト2"]]
+        msg: "Duplicate mapping as below:"
+
+
+
+
+

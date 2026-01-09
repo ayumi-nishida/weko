@@ -13,3 +13,4 @@ services:
         source: .
         target: /tavern
     tty: true
+    network_mode: host 

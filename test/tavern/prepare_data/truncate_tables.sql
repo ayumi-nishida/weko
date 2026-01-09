@@ -46,7 +46,7 @@ TRUNCATE TABLE oauth2server_client CASCADE;
 
 TRUNCATE TABLE notifications_user_settings;
 
-TRUNCATE TABLE authors;
+TRUNCATE TABLE authors CASCADE;
 
 -- reset workflow_activity_id_seq
 SELECT setval('workflow_activity_id_seq', 1, false);
