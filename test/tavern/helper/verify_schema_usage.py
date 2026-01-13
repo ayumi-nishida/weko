@@ -162,29 +162,36 @@ def append_usage_details(details, mapping_type, schema_leaves, usage, title="使
         title (str): The title for the section. 
         only_unused (bool): Whether to include only unused items.
     """
-    unused_found = False
     lines = [f"=== {mapping_type} {title} ===\n"]
+    unused_found = False
     for leaf, attr_names in schema_leaves:
+        leaf_lines = [f"{leaf}\n"]
         leaf_unused = False
-        lines.append(f"{leaf}\n")
+
         files = usage[leaf]["@value"]
         if files:
-            lines.append(f"  @value: {', '.join(sorted(files))}\n")
+            leaf_lines.append(f"  @value: {', '.join(sorted(files))}\n")
         else:
-            lines.append(f"  @value: [未使用]\n")
-            unused_found = True
+            leaf_lines.append(f"  @value: [未使用]\n")
             leaf_unused = True
-        lines.append(f"  @attributes: {{\n")
+
+        leaf_lines.append(f"  @attributes: {{\n")
         for attr in attr_names:
             attr_files = usage[leaf]["@attributes"][attr]
             if attr_files:
-                lines.append(f"    '{attr}': {', '.join(sorted(attr_files))}\n")
+                leaf_lines.append(f"    '{attr}': {', '.join(sorted(attr_files))}\n")
             else:
-                lines.append(f"    '{attr}': [未使用]\n")
-                unused_found = True
+                leaf_lines.append(f"    '{attr}': [未使用]\n")
                 leaf_unused = True
-        lines.append(f"  }}\n\n")
-    # only_unused=True かつ未使用項目が1つでもあれば出力
+        leaf_lines.append(f"  }}\n\n")
+
+        if only_unused:
+            if leaf_unused:
+                lines.extend(leaf_lines)
+                unused_found = True
+        else:
+            lines.extend(leaf_lines)
+
     if only_unused:
         if unused_found:
             details.extend(lines)
