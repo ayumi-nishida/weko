@@ -118,3 +118,15 @@ WEKO_SWORDSERVER_DEPOSIT_ROLE_ENABLE = [
     "Contributor"
 ]
 """ Roles that can deposit items with token authentication. """
+
+# 要求仕様4の設定値
+WEKO_SWORDSERVER_BULK_IMPORT_TIMEOUT = 60
+""" Timeout(seconds) for bulk import task status checking. """
+
+# 要求仕様4の設定値
+WEKO_SWORDSERVER_EXPIRE_TIME = 24
+""" Expire time(hours) for bulk import task data stored in Redis. """
+
+# 要求仕様2の設定値
+WEKO_SWORDSERVER_FILE_SET_FILE = "/terms/fileSetFile"
+""" File path of file set file in SWORD server. """

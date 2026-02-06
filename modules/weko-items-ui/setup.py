@@ -123,7 +123,9 @@ setup(
             'item_create_scope = weko_items_ui.scopes:item_create_scope',
             'item_update_scope = weko_items_ui.scopes:item_update_scope',
             'item_delete_scope = weko_items_ui.scopes:item_delete_scope',
-            'ranking_read_scope = weko_items_ui.scopes:ranking_read_scope'
+            'ranking_read_scope = weko_items_ui.scopes:ranking_read_scope',
+            # 要求仕様4
+            'item_bulk_create_scope = weko_items_ui.scopes:item_bulk_create_scope',
         ],
         'invenio_db.models': [
             'weko_items_ui = weko_items_ui.models',

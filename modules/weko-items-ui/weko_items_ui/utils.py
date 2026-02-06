@@ -2266,8 +2266,9 @@ def make_stats_file(item_type_id, recids, list_item_role, export_path=""):
         ret.extend([".item_application.workflow",".item_application.terms",".item_application.termsDescription"])
         ret_label.extend([".ITEM_APPLICATION.WORKFLOW",".ITEM_APPLICATION.TERMS",".ITEM_APPLICATION.TERMS_DESCRIPTION"])
 
-    ret.extend(['.cnri', '.doi_ra', '.doi', '.edit_mode'])
-    ret_label.extend(['.CNRI', '.DOI_RA', '.DOI', 'Keep/Upgrade Version'])
+    # 要求仕様4
+    ret.extend(['.cnri', '.doi_ra', '.doi', '.bulk_doi', '.edit_mode'])
+    ret_label.extend(['.CNRI', '.DOI_RA', '.DOI', '.BULK_DOI', 'Keep/Upgrade Version'])
     has_pubdate = len([
         record for _, record in records.records.items()
         if record.get('pubdate')

@@ -562,6 +562,8 @@ WEKO_EXPORT_TEMPLATE_BASIC_ID = [
     ".cnri",
     ".doi_ra",
     ".doi",
+    # 要求仕様4
+    ".bulk_doi",
     ".edit_mode",
 ]
 WEKO_EXPORT_TEMPLATE_BASIC_NAME = [
@@ -575,6 +577,8 @@ WEKO_EXPORT_TEMPLATE_BASIC_NAME = [
     ".CNRI",
     ".DOI_RA",
     ".DOI",
+    # 要求仕様4
+    ".BULK_DOI",
     "Keep/Upgrade Version",
 ]
 WEKO_EXPORT_TEMPLATE_BASIC_OPTION = [
@@ -780,3 +784,11 @@ ROCRATE_METADATA_FILE = "data/ro-crate-metadata.json"
 
 ROCRATE_METADATA_WK_CONTEXT_V1 = "http://purl.org/wk/v1/wk-context.jsonld"
 """ Metadata context file name for RO-Crate+Bagit. """
+
+# 要求仕様1 設定値
+WEKO_SEARCH_UI_IMPORT_REPLACE_RULES = {}
+"""Strings to be replaced during item import."""
+
+# 要求仕様1 設定値
+WEKO_SEARCH_UI_IMPORT_REPLACE_RULE_MAP = {}
+"""Mapping of jsonld_mappings table 'id' to replacement rule keys."""

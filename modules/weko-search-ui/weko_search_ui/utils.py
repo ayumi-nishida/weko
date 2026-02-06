@@ -931,7 +931,9 @@ def check_jsonld_import_items(
         with open(f"{data_path}/{json_name}", "r") as f:
             json_ld = json.load(f)
         mapper.data_path = data_path
-        item_metadatas, _ = mapper.to_item_metadata(json_ld)
+        # 要求仕様1 修正
+        mapper.mapping_id = mapping_id
+        item_metadatas, x = mapper.to_item_metadata(json_ld)
         list_record = [
             {
                 "$schema": f"/items/jsonschema/{item_type.id}",
@@ -1496,7 +1498,10 @@ def handle_validate_item_import(list_record, schema) -> list:
                     type="type:integer", existing_type="type:string"
                 )
             )
-            records["warnings"] = warnings if len(warnings) else None
+            # 要求仕様1と合わせて修正する既バグ
+            existing_warnings = record.get("warnings") or []
+            all_warnings = existing_warnings + warnings
+            records["warnings"] = all_warnings if len(all_warnings) else None
         result.append(records)
 
     return result
@@ -1589,7 +1594,18 @@ def handle_check_exist_record(list_record) -> list:
         item = dict(**item, **{"status": "new"})
         # current_app.logger.debug("item:{}".format(item))
         errors = item.get("errors") or []
+        
+        # 要求仕様2.3 修正ここから
+        recid = request.view_args.get("recid")
         item_id = item.get("id")
+        if item_id is None:
+            item["id"] = recid
+            item_id = recid
+        system_url = request.host_url + "records/" + str(item_id)
+        if item.get("uri") is None:
+            item["uri"] = system_url
+        # 要求仕様2.3 修正ここまで
+
         # current_app.logger.debug("item_id:{}".format(item_id))
         if item_id and item_id is not "":
             system_url = request.host_url + "records/" + str(item_id)

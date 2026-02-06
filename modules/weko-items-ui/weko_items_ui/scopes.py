@@ -65,3 +65,11 @@ ranking_read_scope = Scope(
     help_text=_('Allow read ranking.'),
 )
 """Scope to protect ranking."""
+
+# 要求仕様4
+item_bulk_create_scope = Scope(
+    id_='item:bulkcreate',
+    group='item',
+    help_text=_('Allow bulk create item.'),
+)
+"""Scope to bulk create item."""

@@ -1380,6 +1380,79 @@ class JsonLdMapper(JsonMapper):
 
         return errors if errors else None
 
+    # 要求仕様1 ここから
+    def apply_import_replace_rules(self, metadata, info):
+        """
+        Apply import replace rules to metadata.
+        Args:
+            metadata (dict): metadata with json format.
+            info (dict): information during import.
+        Returns:
+            tuple (dict, dict):
+                - dict: replaced metadata.
+                - dict: information during import.
+        """
+        warning_list = []
+        try:
+            mapping_id = self.mapping_id
+            rules = current_app.config.get("WEKO_SEARCH_UI_IMPORT_REPLACE_RULES", {})
+            rule_map = current_app.config.get("WEKO_SEARCH_UI_IMPORT_REPLACE_RULE_MAP", {})
+            rule_keys = rule_map.get(str(mapping_id), [])
+            if not (
+                isinstance(rules, dict)
+                and isinstance(rule_map, dict)
+                and isinstance(rule_keys, list)
+            ):
+                raise ValueError(f"The type of the jsonld mapping replacement rule is invalid.")
+
+            for rule_id in rule_keys:
+                if rule_id not in rules:
+                    warning_list.append(f"Required replacement rule: '{rule_id}' is missing. ")
+                    continue
+
+                rule = rules.get(rule_id)
+                from_str = rule.get("from", None)
+                to_str = rule.get("to", None)
+                jsonld_path_list = rule.get("jsonld_path", [])
+                if (
+                    not isinstance(from_str, str) or from_str == "" or
+                    not isinstance(to_str, str) or
+                    not isinstance(jsonld_path_list, list)
+                ):
+                    warning_list.append(f"Replacement rule: '{rule_id}' is invalid.")
+                    continue
+
+                is_regex = rule.get("is_regex", False)
+                if not isinstance(is_regex, bool):
+                    is_regex = False
+                for path_key in jsonld_path_list:
+                    for meta_key in list(metadata.keys()):
+                        meta_key_no_index = re.sub(r'\[\d+\]', '', meta_key)
+                        if meta_key_no_index == path_key:
+                            metadata_value = metadata[meta_key]
+                            if is_regex:
+                                metadata[path_key] = re.sub(from_str, lambda m: to_str, metadata_value)
+                            else:
+                                metadata[path_key] = metadata_value.replace(from_str, to_str)
+
+            if warning_list:
+                raise ValueError(warning_list)
+            return metadata, info
+        
+        except Exception as e:
+            info_warnings = info.get("warnings", [])
+            if isinstance(e, ValueError) and isinstance(e.args[0], list):
+                for warn in e.args[0]:
+                    warning_message = f"Replacement failed.: {warn}"
+                    current_app.logger.warning(warning_message)
+                    info_warnings.append(warning_message)
+            else:
+                warning_message = f"Replacement failed.: {e}"
+                current_app.logger.warning(warning_message)
+                info_warnings.append(warning_message)
+            info["warnings"] = info_warnings
+            return metadata, info
+    # 要求仕様1 ここまで
     def to_item_metadata(self, json_ld):
         """Map to item type metadata.
 
@@ -1457,6 +1530,8 @@ class JsonLdMapper(JsonMapper):
             ],
             "warnings": [],
         }
+        # 要求仕様1
+        metadata, system_info = self.apply_import_replace_rules(metadata, system_info)
 
         missing_metadata = {}
 
@@ -1733,6 +1808,8 @@ class JsonLdMapper(JsonMapper):
             ]
             system_info["save_as_is"] = extracted.get("wk:saveAsIs", False)
             system_info["metadata_replace"] = extracted.get("wk:metadataReplace", False)
+            # 要求仕様1
+            system_info["researchmap_linkage"] = extracted.get("wk:researchmapLinkage", False)
 
             for relation in extracted.get("jpcoar:relation", []):
                 relation_id = relation.get("jpcoar:relatedIdentifier") or {}
@@ -2425,6 +2502,9 @@ class JsonLdMapper(JsonMapper):
         )
         # wk:metadaAutoFill
         rocrate.root_dataset["wk:metadataAutoFill"] = False
+        # 要求仕様1
+        # wk:researchmapLinkage
+        rocrate.root_dataset["wk:researchmapLinkage"] = False
 
         return rocrate
 

@@ -833,6 +833,10 @@ class CheckComponent extends React.Component {
     this.handleGenerateData = this.handleGenerateData.bind(this)
     this.generateTitle = this.generateTitle.bind(this)
     this.handleDownload = this.handleDownload.bind(this)
+    // 要求仕様4 実装ここから
+    this.handleOnInputChanged = this.handleOnInputChanged.bind(this)
+    this.handleOnInputBlur = this.handleOnInputBlur.bind(this)
+    // 要求仕様4 実装ここまで
   }
 
   componentWillReceiveProps(nextProps, prevProps) {
@@ -934,6 +938,47 @@ class CheckComponent extends React.Component {
       }
     });
   }
+  // 要求仕様4 実装ここから
+  handleOnInputChanged(e) {
+    // 入力値は一時的にstateで保持し、list_recordは変更しない
+    const value = e.target.value;
+    let name = e.target.name;
+    if (name === "list_doi") {
+      name = "bulk_doi";
+    }
+    const key = e.target.getAttribute("data-key");
+    // 入力値を一時的に保持するstateを追加
+    this.setState(prevState => {
+      const temp_inputs = { ...(prevState.temp_inputs || {}) };
+      if (typeof key !== "undefined") {
+        if (!temp_inputs[key]) temp_inputs[key] = {};
+        temp_inputs[key][name] = value;
+      }
+      return { temp_inputs };
+    });
+  }
+
+  handleOnInputBlur(e) {
+    // フォーカスが外れたときにlist_recordを書き換える
+    const value = e.target.value;
+    let name = e.target.name;
+    if (name === "list_doi") {
+      name = "bulk_doi";
+    }
+    const key = e.target.getAttribute("data-key");
+    this.setState(prevState => {
+      const list_record = [...prevState.list_record];
+      console.log("list_record before:", list_record)
+      if (typeof key !== "undefined" && list_record[key]) {
+        list_record[key][name] = value;
+      }
+      // temp_inputsもクリア
+      const temp_inputs = { ...(prevState.temp_inputs || {}) };
+      if (temp_inputs[key]) delete temp_inputs[key];
+      return { list_record, temp_inputs };
+    });
+  }
+  // 要求仕様4 実装ここまで
 
   render() {
     const { total, list_record, update_item, new_item, check_error, warning_item } = this.state
@@ -1020,7 +1065,18 @@ class CheckComponent extends React.Component {
                         </td>
                         <td>
                           <div class="form-inline">
-                            <input class="form-control" type="text" name="list_doi" disabled={item.errors && item.errors.length > 0} />
+                            {/* 要求仕様4 実装ここから */}
+                            <input
+                              className="form-control"
+                              type="text"
+                              name="list_doi"
+                              value={this.state.temp_inputs?.[key]?.bulk_doi ?? item.bulk_doi ?? undefined}
+                              data-key={key}
+                              onChange={this.handleOnInputChanged}
+                              onBlur={this.handleOnInputBlur}
+                              disabled={item.errors && item.errors.length > 0}
+                            />
+                            {/* 要求仕様4 実装ここまで */}
                           </div>
                         </td>
                         <td>
@@ -1144,7 +1200,7 @@ class ResultComponent extends React.Component {
                       <td>{item.start_date ? item.start_date : ''}</td>
                       <td>{item.end_date ? item.end_date : ''}</td>
                       <td><a href={item.item_id ? "/records/" + item.item_id : ''} target="_blank">
-                          {item.item_id || ''}</a>
+                        {item.item_id || ''}</a>
                       </td>
                       <td>{getTaskStatusLabel(item.task_status)}</td>
                       <td>{getTaskResult(item.task_result)}</td>
