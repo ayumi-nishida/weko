@@ -1408,6 +1408,12 @@ def register_bulk_import_task(mode):
     from weko_index_tree.api import Indexes
     from weko_redis.redis import RedisConnection
 
+    super_roles = current_app.config.get('WEKO_PERMISSION_SUPER_ROLE_USER', [])
+    if not (current_user and current_user.is_authenticated and any(
+        role.name in super_roles for role in current_user.roles
+    )):
+        return jsonify({"result": "NG", "errors": ["Permission required."]}), 403
+
     # パスパラメータ取得
     content_disposition, content_disposition_options = parse_options_header(
         request.headers.get("Content-Disposition") or ""
@@ -1447,22 +1453,22 @@ def register_bulk_import_task(mode):
         return jsonify({"result": "NG", "errors": ["Uploaded file is not a valid ZIP file"]}), 400
 
     # 編集可能インデックス一覧を取得する
-    role_ids = []
-    can_edit_indexes = []
-    if current_user and current_user.is_authenticated:
-        for role in current_user.roles:
-            if role.name in current_app.config['WEKO_PERMISSION_SUPER_ROLE_USER']:
-                # 管理者は[0] 全インデックス編集可
-                can_edit_indexes = [0]
-                break
-            else:
-                role_ids.append(role.id)
-    if role_ids:
-        from invenio_communities.models import Community
-        comm_data = Community.get_by_user(role_ids, with_deleted=True).all()
-        for comm in comm_data:
-            can_edit_indexes += [i.cid for i in Indexes.get_self_list(comm.root_node_id)]
-        can_edit_indexes = list(set(can_edit_indexes))
+    # role_ids = []
+    can_edit_indexes = [0]
+    # if current_user and current_user.is_authenticated:
+    #     for role in current_user.roles:
+    #         if role.name in current_app.config['WEKO_PERMISSION_SUPER_ROLE_USER']:
+    #             # 管理者は[0] 全インデックス編集可
+    #             can_edit_indexes = [0]
+    #             break
+    #         else:
+    #             role_ids.append(role.id)
+    # if role_ids:
+    #     from invenio_communities.models import Community
+    #     comm_data = Community.get_by_user(role_ids, with_deleted=True).all()
+    #     for comm in comm_data:
+    #         can_edit_indexes += [i.cid for i in Indexes.get_self_list(comm.root_node_id)]
+    #     can_edit_indexes = list(set(can_edit_indexes))
 
     # チェックタスクをCeleryで非同期で実行
     task = check_import_items_task.apply_async(
@@ -1610,6 +1616,18 @@ def register_bulk_import_task(mode):
 @oauth2.require_oauth()
 @require_oauth_scopes(item_bulk_create_scope.id)
 def get_bulk_import_task_status(task_id):
+    
+    # スーパーユーザーのロールを取得
+    super_roles = current_app.config.get('WEKO_PERMISSION_SUPER_ROLE_USER', [])
+    # ユーザーIDの一致チェック
+    user_id = None
+    if current_user and current_user.is_authenticated:
+        user_id = current_user.get_id()
+    
+    task_user_id = str(task_data.get("user_id"))
+    if str(user_id) != task_user_id or any(role.name in super_roles for role in current_user.roles):
+        return jsonify({"error": "Permission denied"}), 403
+    
     try:
         redis_connection = RedisConnection()
         datastore = redis_connection.connection(db=current_app.config['CACHE_REDIS_DB'], kv=True)
@@ -1621,13 +1639,6 @@ def get_bulk_import_task_status(task_id):
         except Exception:
             return jsonify({"error": "Task data decode error"}), 400
 
-        # ユーザーIDの一致チェック
-        user_id = None
-        if current_user and current_user.is_authenticated:
-            user_id = current_user.get_id()
-        task_user_id = str(task_data.get("user_id"))
-        if str(user_id) != task_user_id:
-            return jsonify({"error": "Permission denied"}), 403
 
         # 各インポートタスクの状態更新
         if "tasks" in task_data:

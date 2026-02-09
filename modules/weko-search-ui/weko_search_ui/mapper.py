@@ -1413,11 +1413,11 @@ class JsonLdMapper(JsonMapper):
                 rule = rules.get(rule_id)
                 from_str = rule.get("from", None)
                 to_str = rule.get("to", None)
-                jsonld_path_list = rule.get("jsonld_path", [])
+                target_path_list = rule.get("target_path", [])
                 if (
                     not isinstance(from_str, str) or from_str == "" or
                     not isinstance(to_str, str) or
-                    not isinstance(jsonld_path_list, list)
+                    not isinstance(target_path_list, list)
                 ):
                     warning_list.append(f"Replacement rule: '{rule_id}' is invalid.")
                     continue
@@ -1425,7 +1425,7 @@ class JsonLdMapper(JsonMapper):
                 is_regex = rule.get("is_regex", False)
                 if not isinstance(is_regex, bool):
                     is_regex = False
-                for path_key in jsonld_path_list:
+                for path_key in target_path_list:
                     for meta_key in list(metadata.keys()):
                         meta_key_no_index = re.sub(r'\[\d+\]', '', meta_key)
                         if meta_key_no_index == path_key:
