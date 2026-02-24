@@ -25,6 +25,7 @@ from rocrate.model.contextentity import ContextEntity
 from urllib.parse import urlparse
 
 from flask import current_app, url_for
+from flask_babelex import lazy_gettext as _
 
 from invenio_pidstore.models import PersistentIdentifier
 from weko_records.api import (
@@ -1380,17 +1381,15 @@ class JsonLdMapper(JsonMapper):
 
         return errors if errors else None
 
-    # 要求仕様1 ここから
     def apply_import_replace_rules(self, metadata, info):
         """
-        Apply import replace rules to metadata.
+        Apply import replacement rules to metadata.
         Args:
-            metadata (dict): metadata with json format.
-            info (dict): information during import.
+            metadata (dict): Metadata to apply replacement rules to.
+            info (dict): System information dictionary to log warnings.
         Returns:
-            tuple (dict, dict):
-                - dict: replaced metadata.
-                - dict: information during import.
+            metadata (dict): Metadata after applying replacement rules.
+            info (dict): Updated system information with warnings.
         """
         warning_list = []
         try:
@@ -1408,51 +1407,85 @@ class JsonLdMapper(JsonMapper):
             for rule_id in rule_keys:
                 if rule_id not in rules:
                     warning_list.append(f"Required replacement rule: '{rule_id}' is missing. ")
+                raise ValueError(
+                    _("The type of the jsonld mapping replacement rule is invalid."))
+
+            for rule_id in rule_keys:
+                if rule_id not in rules:
+                    warning_list.append(
+                        _("Required replacement rule: '%(rule_id)s' is missing.",\
+                        rule_id=rule_id))
                     continue
 
-                rule = rules.get(rule_id)
+                rule = rules.get(rule_id, None)
+                if not isinstance(rule, dict):
+                    warning_list.append(
+                        _("Replacement rule: '%(rule_id)s' is invalid.",
+                        rule_id=rule_id))
+                    continue
+
                 from_str = rule.get("from", None)
                 to_str = rule.get("to", None)
                 target_path_list = rule.get("target_path", [])
-                if (
-                    not isinstance(from_str, str) or from_str == "" or
-                    not isinstance(to_str, str) or
-                    not isinstance(target_path_list, list)
+
+                if not(
+                    isinstance(from_str, str) and
+                    from_str != "" and
+                    isinstance(to_str, str) and
+                    isinstance(target_path_list, list)
                 ):
-                    warning_list.append(f"Replacement rule: '{rule_id}' is invalid.")
+                    warning_list.append(
+                        _("Replacement rule: '%(rule_id)s' is invalid.",
+                        rule_id=rule_id))
                     continue
 
                 is_regex = rule.get("is_regex", False)
                 if not isinstance(is_regex, bool):
+                    warning_list.append(
+                        _("Replacement rule: '%(rule_id)s' - 'is_regex' is "
+                        "not boolean. Treated as False.",
+                        rule_id=rule_id))
                     is_regex = False
-                for path_key in target_path_list:
-                    for meta_key in list(metadata.keys()):
-                        meta_key_no_index = re.sub(r'\[\d+\]', '', meta_key)
-                        if meta_key_no_index == path_key:
-                            metadata_value = metadata[meta_key]
-                            if is_regex:
-                                metadata[path_key] = re.sub(from_str, lambda m: to_str, metadata_value)
-                            else:
-                                metadata[path_key] = metadata_value.replace(from_str, to_str)
+
+                try:
+                    for path_key in target_path_list:
+                        for meta_key in list(metadata.keys()):
+                            meta_key_no_index = re.sub(r'\[\d+\]', '', meta_key)
+                            if meta_key_no_index == path_key:
+                                metadata_value = metadata[meta_key]
+                                if is_regex:
+                                    metadata[path_key] = \
+                                    re.sub(from_str, lambda m: to_str,
+                                            metadata_value)
+                                else:
+                                    metadata[path_key] = \
+                                    metadata_value.replace(from_str, to_str)
+                except re.error as e:
+                    warning_list.append(_("Replacement rule: '%(rule_id)s' - "
+                                          "regex error: %(error)s",\
+                                           rule_id=rule_id, error=str(e)))
 
             if warning_list:
                 raise ValueError(warning_list)
             return metadata, info
-        
         except Exception as e:
             info_warnings = info.get("warnings", [])
             if isinstance(e, ValueError) and isinstance(e.args[0], list):
                 for warn in e.args[0]:
-                    warning_message = f"Replacement failed.: {warn}"
+                    if 'is_regex' in warn:
+                        warning_message = str(warn)
+                    else:
+                        warning_message = str(_(
+                            "Replacement failed.: %(warn)s", warn=warn))
                     current_app.logger.warning(warning_message)
                     info_warnings.append(warning_message)
             else:
-                warning_message = f"Replacement failed.: {e}"
+                warning_message = str(_(
+                    "Replacement failed.: %(warning)s", warning=e))
                 current_app.logger.warning(warning_message)
                 info_warnings.append(warning_message)
             info["warnings"] = info_warnings
             return metadata, info
-    # 要求仕様1 ここまで
     def to_item_metadata(self, json_ld):
         """Map to item type metadata.
 
@@ -1532,6 +1565,10 @@ class JsonLdMapper(JsonMapper):
         }
         # 要求仕様1
         metadata, system_info = self.apply_import_replace_rules(metadata, system_info)
+
+        # Execute replacement process for metadata
+        metadata, system_info = \
+        self.apply_import_replace_rules(metadata, system_info)
 
         missing_metadata = {}
 
@@ -1808,8 +1845,8 @@ class JsonLdMapper(JsonMapper):
             ]
             system_info["save_as_is"] = extracted.get("wk:saveAsIs", False)
             system_info["metadata_replace"] = extracted.get("wk:metadataReplace", False)
-            # 要求仕様1
-            system_info["researchmap_linkage"] = extracted.get("wk:researchmapLinkage", False)
+            system_info["researchmap_linkage"] = extracted.get(
+                "wk:researchmapLinkage", False)
 
             for relation in extracted.get("jpcoar:relation", []):
                 relation_id = relation.get("jpcoar:relatedIdentifier") or {}
@@ -2503,6 +2540,9 @@ class JsonLdMapper(JsonMapper):
         # wk:metadaAutoFill
         rocrate.root_dataset["wk:metadataAutoFill"] = False
         # 要求仕様1
+        # wk:researchmapLinkage
+        rocrate.root_dataset["wk:researchmapLinkage"] = False
+
         # wk:researchmapLinkage
         rocrate.root_dataset["wk:researchmapLinkage"] = False
 
