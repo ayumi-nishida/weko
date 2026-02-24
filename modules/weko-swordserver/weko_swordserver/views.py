@@ -45,7 +45,7 @@ from weko_records_ui.utils import get_record_permalink
 from weko_search_ui.tasks import check_import_items_task, import_item
 from weko_search_ui.utils import (
     import_items_to_system, import_items_to_activity,
-    delete_items_with_activity, create_flow_define, 
+    delete_items_with_activity, create_flow_define,
     handle_workflow, handle_metadata_by_doi
 )
 from weko_workflow.errors import WekoWorkflowException
@@ -406,7 +406,6 @@ def post_service_document():
     warns = []
     activity_id = None
     recid = None
-    # 要求仕様2 ここから
     recids = []
     activity_ids = []
     action = None
@@ -417,7 +416,6 @@ def post_service_document():
             activity_id, recid, action, error = process_item(item, request_info)
             recids.append(recid)
             activity_ids.append(activity_id)
-            # 要求仕様2 ここまで
             if error:
                 warns.append((activity_id, recid, error))
             if file_format == "JSON":
@@ -466,7 +464,6 @@ def post_service_document():
         .format(request.oauth.client.name, recid)
     )
     if register_type == "Direct":
-        # 要求仕様2 ここから
         if len(recids) > 1:
             response = jsonify(_get_status_multi_document(recids, None, register_type)), 201
         else:
@@ -483,7 +480,6 @@ def post_service_document():
             response = jsonify(
                 _get_status_workflow_document(activity_id, recid)
             ), 201 if action == "end_action" else 202
-        # 要求仕様2 ここまで
 
     return response
 
@@ -845,8 +841,11 @@ def _get_status_document(recid):
         permalink = record["system_identifier_doi"][
             "attribute_value_mlt"][0][
             "subitem_systemidt_identifier"]
-        
+
     # 要求仕様2 ここから
+    # Get file info
+    files_info = _get_file_info(record, record_uri)
+
     # Get file info
     files_info = _get_file_info(record, record_uri)
 
@@ -896,7 +895,6 @@ def _get_status_document(recid):
             },
         ]
     }
-    # 要求仕様2 ここから
     if files_info is not None:
         for _, file_info in files_info.items():
             raw_data["links"].append(file_info)
@@ -912,7 +910,6 @@ def _get_status_document(recid):
 
     return statusDocument.data
 
-# 要求仕様 2 の実装
 def _get_status_multi_document(recids, activity_ids, register_type="Direct"):
     """Generate a Status Document for multiple records.
 
@@ -950,16 +947,16 @@ def _get_status_multi_document(recids, activity_ids, register_type="Direct"):
         ):
             permalink = record["system_identifier_doi"][
                 "attribute_value_mlt"][0]["subitem_systemidt_identifier"]
-        
 
         files_info = _get_file_info(record, record_uri)
 
-        # 2.2 修正分
         inverse_refs = ItemReference.get_dst_references(recid)
         logs = []
         for ref in inverse_refs:
             src_pid = ref.src_item_pid
             if not float(src_pid).is_integer():
+                continue
+            if str(int(src_pid)) not in [str(int(float(r))) for r in recids]:
                 continue
             src_uri = "{}records/{}".format(request.url_root, src_pid)
             ref_type = ref.reference_type
@@ -973,8 +970,7 @@ def _get_status_multi_document(recids, activity_ids, register_type="Direct"):
         })
 
         if logs:
-            all_links[-1]["log"] = logs 
-        # 2.2 修正分ここまで
+            all_links[-1]["log"] = json.dumps(logs)
 
         # Add file links
         if files_info is not None:
@@ -988,22 +984,28 @@ def _get_status_multi_document(recids, activity_ids, register_type="Direct"):
                 "contentType": "text/html"
             })
 
-
         if recid == last_recid:
             last_record = record
 
     if register_type == "Workflow":
         for activity_id in activity_ids:
             all_links.append({
-                "@id": url_for("weko_workflow.display_activity", activity_id=activity_id, _external=True),
+                "@id": url_for(
+                    "weko_workflow.display_activity",
+                    activity_id=activity_id,
+                    _external=True
+                ),
                 "rel": ["alternate"],
                 "contentType": "text/html"
             })
-
     raw_data = {
         "@context": constants.JSON_LD_CONTEXT,
         "@type": constants.DocumentType.Status[0],
-        "@id": url_for("weko_swordserver.get_status_document", recid=last_recid, _external=True),
+        "@id": url_for(
+            "weko_swordserver.get_status_document",
+            recid=last_recid,
+            _external=True
+        ),
         "actions": {
             "getMetadata": False,
             "getFiles": False,
@@ -1053,7 +1055,6 @@ def _get_status_workflow_document(activity_id, recid):
         # "@context"
         # "@type"
     """
-    # 要求仕様2 ここから
     record_class = import_string("weko_deposit.api:WekoRecord")
     try:
         resolver = Resolver(pid_type="recid", object_type="rec",
@@ -1061,18 +1062,42 @@ def _get_status_workflow_document(activity_id, recid):
         pid, record = resolver.resolve(recid)
     except Exception:
         raise WekoSwordserverException("Item not found. (recid={})".format(recid), ErrorType.NotFound)
-    # 要求仕様2 ここまで
     if not activity_id:
         raise WekoSwordserverException("Activity created, but not found.", ErrorType.NotFound)
 
     # Get record uri
-    record_url = ""
-    if recid:
-        record_url = url_for("weko_swordserver.get_status_document", recid=recid, _external=True)
-    # 要求仕様2 ここから
+    record_url = url_for("weko_swordserver.get_status_document", recid=recid, _external=True)
+    links_record_url = "{}records/{}".format(request.url_root, recid)
     # Get file info
-    files_info = _get_file_info(record, record_url)
-    # 要求仕様2 ここまで
+    files_info = None
+    from weko_workflow.models import Activity
+    activity = Activity.query.filter_by(activity_id=activity_id).first()
+    if activity and activity.temp_data:
+        decoded = activity.temp_data.encode().decode('unicode_escape')
+        temp_data = json.loads(decoded)
+        files = temp_data.get("files")
+        files_info = {}
+        if files:
+            for file in files:
+                label = file.get("filename")
+                host_name = os.environ.get("INVENIO_WEB_HOST_NAME")
+                url = f"https://{host_name}/record/{recid}/files/{label}"
+                content_type = file.get("mimetype")
+                file_rel = (
+                    current_app.config["WEKO_SWORDSERVER_SWORD_VERSION"]
+                    + current_app.config["WEKO_SWORDSERVER_FILE_SET_FILE"]
+                )
+                if label:
+                    files_info[label] = {
+                        "@id": url,
+                        "contentType": content_type,
+                        "rel": [file_rel],
+                        "derivedFrom": links_record_url
+                    }
+        if not files_info:
+            files_info = None
+    else:
+        files_info = _get_file_info(record, links_record_url)
 
     raw_data = {
         "@id": record_url,
@@ -1110,36 +1135,33 @@ def _get_status_workflow_document(activity_id, recid):
                 "rel" : ["alternate"],
                 "contentType" : "text/html"
             },
-            # 要求仕様2 ここから
             {
-                "@id" : record_url,
+                "@id" : links_record_url,
                 "rel" : ["alternate"],
                 "contentType" : "text/html"
             }
-            # 要求仕様2 ここまで
         ]
     }
-    # 要求仕様2 ここから
     if files_info is not None:
         for _, file_info in files_info.items():
             raw_data["links"].append(file_info)
-    # 要求仕様2 ここまで
-
     statusDocument = StatusDocument(raw=raw_data)
 
     return statusDocument.data
 
-# 要求仕様2 ここから
 def _get_file_info(record, record_url):
     files_info = {}
-    file_rel = current_app.config["WEKO_SWORDSERVER_SWORD_VERSION"] + current_app.config["WEKO_SWORDSERVER_FILE_SET_FILE"]
+    file_rel = (
+        current_app.config["WEKO_SWORDSERVER_SWORD_VERSION"]
+        + current_app.config["WEKO_SWORDSERVER_FILE_SET_FILE"]
+    )
     for _, attr_val in record.items():
         if isinstance(attr_val, dict) and attr_val.get("attribute_type", None) == "file":
             file_mlt = attr_val.get("attribute_value_mlt")
             for file in file_mlt:
                 url_info = file.get("url", None)
                 url = url_info.get("url") if isinstance(url_info, dict) else None
-                label = url_info.get("label", None)
+                label = url_info.get("label", None) if isinstance(url_info, dict) else None
                 content_type = file.get("mimetype") or file.get("format")
                 if url and label:
                     files_info[label] = {
@@ -1155,17 +1177,14 @@ def _sort_links_for_status(links):
     def link_key(link):
         link_id = link.get("@id", "")
         rel = link.get("rel", [])
-        # 1. ワークフローactivityリンク
         if "/workflow/activity/detail/" in link_id:
             group = 0
             m = re.search(r'/workflow/activity/detail/[^-]+-\d+-0*(\d+)', link_id)
             order = int(m.group(1)) if m else 0
-        # 2. レコードHTMLリンク
         elif "/records/" in link_id and "alternate" in rel:
             group = 1
             m = re.search(r'/records/(\d+)', link_id)
             order = int(m.group(1)) if m else 0
-        # 3. ファイルリンク
         elif "fileSetFile" in "".join(rel):
             group = 2
             derived = link.get("derivedFrom", "")
@@ -1177,7 +1196,6 @@ def _sort_links_for_status(links):
         return (group, order)
     return sorted(links, key=link_key)
 
-# 要求仕様2 ここまで
 @blueprint.route("/deposit/<recid>", methods=["DELETE"])
 @oauth2.require_oauth()
 @limiter.limit("")
@@ -1438,7 +1456,7 @@ def register_bulk_import_task(mode):
     # チェックモードフラグ
     is_check_only = (mode == "check")
     # 識別子変更モード
-    is_change_identifier = request.form.get("is_change_identifier", "false") == "true" 
+    is_change_identifier = request.form.get("is_change_identifier", "false") == "true"
 
     # 一時ファイルを保存
     temp_dir = tempfile.mkdtemp()
@@ -1515,7 +1533,7 @@ def register_bulk_import_task(mode):
                 status = "ERROR"
             elif warning_count > 0:
                 status = "WARNING"
-                
+
             summary = {
                 "summary": {
                     "Total": total,
@@ -1607,7 +1625,7 @@ def register_bulk_import_task(mode):
                 })
         task_data["tasks"] = tasks
         task_data["status"] = "importing"
-        datastore.put(task.id, json.dumps(task_data).encode("utf-8"))                
+        datastore.put(task.id, json.dumps(task_data).encode("utf-8"))
 
     summary["task_id"] = task.id
     return jsonify(summary), 200
@@ -1616,18 +1634,18 @@ def register_bulk_import_task(mode):
 @oauth2.require_oauth()
 @require_oauth_scopes(item_bulk_create_scope.id)
 def get_bulk_import_task_status(task_id):
-    
+
     # スーパーユーザーのロールを取得
     super_roles = current_app.config.get('WEKO_PERMISSION_SUPER_ROLE_USER', [])
     # ユーザーIDの一致チェック
     user_id = None
     if current_user and current_user.is_authenticated:
         user_id = current_user.get_id()
-    
+
     task_user_id = str(task_data.get("user_id"))
     if str(user_id) != task_user_id or any(role.name in super_roles for role in current_user.roles):
         return jsonify({"error": "Permission denied"}), 403
-    
+
     try:
         redis_connection = RedisConnection()
         datastore = redis_connection.connection(db=current_app.config['CACHE_REDIS_DB'], kv=True)

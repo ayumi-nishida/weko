@@ -79,6 +79,9 @@ scripts/demo/postgresql/
 docker-compose.dev.yml
 *.bak
 
+# Test output files
+test_output.txt
+
 #PDF cover page-related files
 header-icons/*
 combined-pdfs/*
@@ -102,3 +105,4 @@ test/dummyfile/data
 # inbox
 inbox/
 ui-tests/test-results/
+SwordAPIScript

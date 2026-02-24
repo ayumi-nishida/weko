@@ -161,13 +161,355 @@ CREATE TABLE IF NOT EXISTS user_activity_logs (
     log_group_id INTEGER,
     log JSONB NOT NULL,
     remarks TEXT,
-    CONSTRAINT pk_user_activity_logs PRIMARY KEY (id),
+    CONSTRAINT pk_user_activity_logs PRIMARY KEY (id, date),
+    CONSTRAINT uq_date UNIQUE (date),
     CONSTRAINT fk_user_activity_active_user_id
         FOREIGN KEY (user_id) REFERENCES accounts_user(id) ON DELETE SET NULL,
     CONSTRAINT fk_user_activity_community_id
         FOREIGN KEY (community_id) REFERENCES communities_community(id) ON DELETE SET NULL
-);
+) PARTITION BY RANGE (date);
 CREATE SEQUENCE IF NOT EXISTS user_activity_log_group_id_seq;
+
+-- 2026-01～2026-12
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202601' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202601 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202601 FOR VALUES FROM (''2026-01-01'') TO (''2026-02-01'')';
+        RAISE NOTICE 'user_activity_logs_202601: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202601: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202602' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202602 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202602 FOR VALUES FROM (''2026-02-01'') TO (''2026-03-01'')';
+        RAISE NOTICE 'user_activity_logs_202602: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202602: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202603' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202603 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202603 FOR VALUES FROM (''2026-03-01'') TO (''2026-04-01'')';
+        RAISE NOTICE 'user_activity_logs_202603: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202603: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202604' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202604 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202604 FOR VALUES FROM (''2026-04-01'') TO (''2026-05-01'')';
+        RAISE NOTICE 'user_activity_logs_202604: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202604: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202605' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202605 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202605 FOR VALUES FROM (''2026-05-01'') TO (''2026-06-01'')';
+        RAISE NOTICE 'user_activity_logs_202605: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202605: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202606' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202606 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202606 FOR VALUES FROM (''2026-06-01'') TO (''2026-07-01'')';
+        RAISE NOTICE 'user_activity_logs_202606: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202606: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202607' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202607 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202607 FOR VALUES FROM (''2026-07-01'') TO (''2026-08-01'')';
+        RAISE NOTICE 'user_activity_logs_202607: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202607: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202608' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202608 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202608 FOR VALUES FROM (''2026-08-01'') TO (''2026-09-01'')';
+        RAISE NOTICE 'user_activity_logs_202608: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202608: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202609' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202609 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202609 FOR VALUES FROM (''2026-09-01'') TO (''2026-10-01'')';
+        RAISE NOTICE 'user_activity_logs_202609: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202609: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202610' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202610 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202610 FOR VALUES FROM (''2026-10-01'') TO (''2026-11-01'')';
+        RAISE NOTICE 'user_activity_logs_202610: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202610: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202611' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202611 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202611 FOR VALUES FROM (''2026-11-01'') TO (''2026-12-01'')';
+        RAISE NOTICE 'user_activity_logs_202611: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202611: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202612' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202612 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202612 FOR VALUES FROM (''2026-12-01'') TO (''2027-01-01'')';
+        RAISE NOTICE 'user_activity_logs_202612: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202612: Already exists, skipped.';
+    END IF;
+END $$;
+
+-- 2027-01～2027-12
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202701' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202701 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202701 FOR VALUES FROM (''2027-01-01'') TO (''2027-02-01'')';
+        RAISE NOTICE 'user_activity_logs_202701: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202701: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202702' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202702 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202702 FOR VALUES FROM (''2027-02-01'') TO (''2027-03-01'')';
+        RAISE NOTICE 'user_activity_logs_202702: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202702: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202703' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202703 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202703 FOR VALUES FROM (''2027-03-01'') TO (''2027-04-01'')';
+        RAISE NOTICE 'user_activity_logs_202703: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202703: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202704' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202704 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202704 FOR VALUES FROM (''2027-04-01'') TO (''2027-05-01'')';
+        RAISE NOTICE 'user_activity_logs_202704: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202704: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202705' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202705 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202705 FOR VALUES FROM (''2027-05-01'') TO (''2027-06-01'')';
+        RAISE NOTICE 'user_activity_logs_202705: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202705: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202706' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202706 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202706 FOR VALUES FROM (''2027-06-01'') TO (''2027-07-01'')';
+        RAISE NOTICE 'user_activity_logs_202706: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202706: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202707' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202707 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202707 FOR VALUES FROM (''2027-07-01'') TO (''2027-08-01'')';
+        RAISE NOTICE 'user_activity_logs_202707: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202707: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202708' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202708 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202708 FOR VALUES FROM (''2027-08-01'') TO (''2027-09-01'')';
+        RAISE NOTICE 'user_activity_logs_202708: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202708: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202709' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202709 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202709 FOR VALUES FROM (''2027-09-01'') TO (''2027-10-01'')';
+        RAISE NOTICE 'user_activity_logs_202709: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202709: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202710' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202710 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202710 FOR VALUES FROM (''2027-10-01'') TO (''2027-11-01'')';
+        RAISE NOTICE 'user_activity_logs_202710: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202710: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202711' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202711 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202711 FOR VALUES FROM (''2027-11-01'') TO (''2027-12-01'')';
+        RAISE NOTICE 'user_activity_logs_202711: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202711: Already exists, skipped.';
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.tables 
+        WHERE table_name = 'user_activity_logs_202712' AND table_schema = 'public'
+    ) THEN
+        EXECUTE 'CREATE TABLE user_activity_logs_202712 (LIKE user_activity_logs INCLUDING ALL)';
+        EXECUTE 'ALTER TABLE user_activity_logs ATTACH PARTITION user_activity_logs_202712 FOR VALUES FROM (''2027-12-01'') TO (''2028-01-01'')';
+        RAISE NOTICE 'user_activity_logs_202712: Created and attached as partition.';
+    ELSE
+        RAISE NOTICE 'user_activity_logs_202712: Already exists, skipped.';
+    END IF;
+END $$;
+
 
 -- modules/weko-notifications
 RAISE NOTICE 'Migration for module weko-notifications';
@@ -1354,6 +1696,127 @@ CREATE TABLE IF NOT EXISTS cris_linkage_result (
         FOREIGN KEY (recid) REFERENCES pidstore_recid(recid),
     CONSTRAINT fk_cris_linkage_result_last_linked_item_item_metadata
         FOREIGN KEY (last_linked_item) REFERENCES item_metadata(id)
+);
+
+-- populate-instance.sh で追加・変更された内容
+RAISE NOTICE 'add record of access_actionsroles';
+--${INVENIO_WEB_INSTANCE} access allow "files-rest-object-read-version" role "${INVENIO_ROLE_REPOSITORY}" 
+INSERT INTO access_actionsroles (action, exclude, argument, role_id)
+SELECT 'files-rest-object-read-version', 'f', null, (SELECT id FROM accounts_role WHERE name = 'Repository Administrator')
+WHERE NOT EXISTS (
+  SELECT 1 
+  FROM access_actionsroles 
+  WHERE action = 'files-rest-object-read-version' 
+    AND role_id = (SELECT id FROM accounts_role WHERE name = 'Repository Administrator')
+);
+
+--${INVENIO_WEB_INSTANCE} access allow "files-rest-object-read-version" role "${INVENIO_ROLE_COMMUNITY}" 
+INSERT INTO access_actionsroles (action, exclude, argument, role_id)
+SELECT 'files-rest-object-read-version', 'f', null, (SELECT id FROM accounts_role WHERE name = 'Community Administrator')
+WHERE NOT EXISTS (
+  SELECT 1 
+  FROM access_actionsroles 
+  WHERE action = 'files-rest-object-read-version' 
+    AND role_id = (SELECT id FROM accounts_role WHERE name = 'Community Administrator')
+);
+
+--${INVENIO_WEB_INSTANCE} access allow "files-rest-object-read-version" role "${INVENIO_ROLE_CONTRIBUTOR}" 
+INSERT INTO access_actionsroles (action, exclude, argument, role_id)
+SELECT 'files-rest-object-read-version', 'f', null, (SELECT id FROM accounts_role WHERE name = 'Contributor')
+WHERE NOT EXISTS (
+  SELECT 1 
+  FROM access_actionsroles 
+  WHERE action = 'files-rest-object-read-version' 
+    AND role_id = (SELECT id FROM accounts_role WHERE name = 'Contributor')
+);
+
+--${INVENIO_WEB_INSTANCE} access allow "stats-api-access" role "${INVENIO_ROLE_COMMUNITY}" 
+INSERT INTO access_actionsroles (action, exclude, argument, role_id)
+SELECT 'stats-api-access', 'f', null, (SELECT id FROM accounts_role WHERE name = 'Community Administrator')
+WHERE NOT EXISTS (
+  SELECT 1 
+  FROM access_actionsroles 
+  WHERE action = 'stats-api-access' 
+    AND role_id = (SELECT id FROM accounts_role WHERE name = 'Community Administrator')
+);
+
+RAISE NOTICE 'add record of api_certificate';
+--${INVENIO_WEB_INSTANCE} cert insert oaa "OAアシスト" 
+INSERT INTO api_certificate (api_code, api_name, cert_data)
+VALUES ('oaa', 'OAアシスト', '""')
+ON CONFLICT (api_name) DO NOTHING;
+
+RAISE NOTICE 'add record of admin_settings';
+--${INVENIO_WEB_INSTANCE} admin_settings create_settings 3 "site_license_mail_settings" "{'Root Index': {'auto_send_flag': False}}" 
+INSERT INTO admin_settings (name, settings)
+VALUES ('site_license_mail_settings', '{"Root Index": {"auto_send_flag": false}}')
+ON CONFLICT (name)
+DO UPDATE SET settings = jsonb_build_object('Root Index', admin_settings.settings);
+
+--${INVENIO_WEB_INSTANCE} admin_settings create_settings 6 "blocked_user_settings" "{'blocked_ePPNs': []}" 
+INSERT INTO admin_settings (name, settings)
+VALUES ('blocked_user_settings', '{"blocked_ePPNs": []}')
+ON CONFLICT (name) DO NOTHING;
+
+--${INVENIO_WEB_INSTANCE} admin_settings create_settings 7 "shib_login_enable" "{'shib_flg': False}" 
+INSERT INTO admin_settings (name, settings)
+VALUES ('shib_login_enable', '{"shib_flg": false}')
+ON CONFLICT (name) DO NOTHING;
+
+--${INVENIO_WEB_INSTANCE} admin_settings create_settings 8 "default_role_settings" "{'gakunin_role': '', 'orthros_outside_role': '', 'extra_role': ''}" 
+INSERT INTO admin_settings (name, settings)
+VALUES ('default_role_settings', '{"gakunin_role": "", "orthros_outside_role": "", "extra_role": ""}')
+ON CONFLICT (name) DO NOTHING;
+
+--${INVENIO_WEB_INSTANCE} admin_settings create_settings 9 "attribute_mapping" "{'shib_eppn': '', 'shib_role_authority_name': '', 'shib_mail': '', 'shib_user_name': ''}" 
+INSERT INTO admin_settings (name, settings)
+VALUES ('attribute_mapping', '{"shib_eppn": "", "shib_role_authority_name": "", "shib_mail": "", "shib_user_name": ""}')
+ON CONFLICT (name) DO NOTHING;
+
+RAISE NOTICE 'add record of authors_prefix';
+--${INVENIO_WEB_INSTANCE} authors_prefix default_settings "NRID" "NRID【非推奨】" "https://nrid.nii.ac.jp/nrid/##" 
+INSERT INTO authors_prefix_settings (name, scheme, url, created, updated)
+SELECT 'NRID', 'NRID【非推奨】', 'https://nrid.nii.ac.jp/nrid/##', now(), now()
+WHERE NOT EXISTS (
+  SELECT 1 
+  FROM authors_prefix_settings 
+  WHERE scheme = 'NRID' 
+     OR scheme = 'NRID【非推奨】'
+);
+
+--${INVENIO_WEB_INSTANCE} authors_prefix default_settings "ISNI" "ISNI" "http://www.isni.org/isni/##" 
+INSERT INTO authors_prefix_settings (name, scheme, url, created, updated)
+VALUES ('ISNI', 'ISNI', 'http://www.isni.org/isni/##', now(), now())
+ON CONFLICT (scheme) DO NOTHING;
+
+--${INVENIO_WEB_INSTANCE} authors_prefix default_settings "VIAF" "VIAF" "https://viaf.org/viaf/##" 
+INSERT INTO authors_prefix_settings (name, scheme, url, created, updated)
+VALUES ('VIAF', 'VIAF', 'https://viaf.org/viaf/##', now(), now())
+ON CONFLICT (scheme) DO NOTHING;
+
+--${INVENIO_WEB_INSTANCE} authors_prefix default_settings "kakenhi" "kakenhi【非推奨】" "" 
+INSERT INTO authors_prefix_settings (name, scheme, url, created, updated)
+SELECT 'kakenhi', 'kakenhi【非推奨】', '', now(), now()
+WHERE NOT EXISTS (
+  SELECT 1 
+  FROM authors_prefix_settings 
+  WHERE scheme = 'kakenhi' 
+     OR scheme = 'kakenhi【非推奨】'
+);
+
+--${INVENIO_WEB_INSTANCE} authors_prefix default_settings "Ringgold" "Ringgold" "" 
+INSERT INTO authors_prefix_settings (name, scheme, url, created, updated)
+VALUES ('Ringgold', 'Ringgold', '', now(), now())
+ON CONFLICT (scheme) DO NOTHING;
+
+--${INVENIO_WEB_INSTANCE} authors_prefix default_settings "GRID" "GRID【非推奨】" "" 
+INSERT INTO authors_prefix_settings (name, scheme, url, created, updated)
+SELECT 'GRID', 'GRID【非推奨】', '', now(), now()
+WHERE NOT EXISTS (
+  SELECT 1 
+  FROM authors_prefix_settings 
+  WHERE scheme = 'GRID' 
+     OR scheme = 'GRID【非推奨】'
 );
 
 RAISE NOTICE 'End execution: Migration W2025-29.sql';

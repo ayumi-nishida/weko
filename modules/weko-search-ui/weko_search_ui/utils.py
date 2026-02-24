@@ -1594,18 +1594,18 @@ def handle_check_exist_record(list_record) -> list:
         item = dict(**item, **{"status": "new"})
         # current_app.logger.debug("item:{}".format(item))
         errors = item.get("errors") or []
-        
-        # 要求仕様2.3 修正ここから
+
         recid = request.view_args.get("recid")
         item_id = item.get("id")
-        if item_id is None:
+        if item_id is None and recid is not None:
             item["id"] = recid
             item_id = recid
-        system_url = request.host_url + "records/" + str(item_id)
-        if item.get("uri") is None:
+        system_url = (
+            request.host_url + "records/" + str(item_id)
+            if item_id is not None else None
+        )
+        if item.get("uri") is None and system_url is not None:
             item["uri"] = system_url
-        # 要求仕様2.3 修正ここまで
-
         # current_app.logger.debug("item_id:{}".format(item_id))
         if item_id and item_id is not "":
             system_url = request.host_url + "records/" + str(item_id)
