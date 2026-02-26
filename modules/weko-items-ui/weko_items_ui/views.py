@@ -24,6 +24,11 @@ import json
 import requests
 import sys
 import traceback
+import shutil
+import os
+import zipfile
+import time
+import tempfile
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 
@@ -87,6 +92,21 @@ from .utils import (
 from .config import WEKO_ITEMS_UI_FORM_TEMPLATE,WEKO_ITEMS_UI_ERROR_TEMPLATE
 from weko_theme.config import WEKO_THEME_DEFAULT_COMMUNITY
 
+from .scopes import item_bulk_process_scope
+from weko_logging.activity_logger import UserActivityLogger
+from weko_search_ui.tasks import check_import_items_task, import_item
+from weko_search_ui.utils import (
+    create_flow_define,
+    handle_workflow, handle_metadata_by_doi
+)
+from invenio_oauth2server.provider import oauth2
+from weko_accounts.utils import limiter
+from invenio_oauth2server.decorators import require_oauth_scopes
+from weko_swordserver.views import _create_error_document
+from weko_swordserver.errors import ErrorType
+from weko_swordserver.decorators import check_on_behalf_of
+from werkzeug.http import parse_options_header
+
 
 blueprint = Blueprint(
     'weko_items_ui',
@@ -97,7 +117,7 @@ blueprint = Blueprint(
 )
 
 blueprint_api = Blueprint(
-        'weko_items_ui_api',
+    'weko_items_ui_api',
     __name__,
     template_folder='templates',
     static_folder='static',
@@ -1740,3 +1760,335 @@ def dbsession_clean(exception):
         except:
             db.session.rollback()
     db.session.remove()
+
+# 要求仕様4の実装 ここから
+@blueprint.errorhandler(401)
+def handle_unauthorized(ex):
+    traceback.print_exc()
+    msg = "Authentication is required."
+    current_app.logger.error(msg)
+    return jsonify(_create_error_document(
+            ErrorType.AuthenticationRequired.type, msg)
+        ), ErrorType.AuthenticationRequired.code
+
+@blueprint.errorhandler(403)
+def handle_forbidden(ex):
+    msg = "Not allowed operation in your role or token scope."
+    current_app.logger.error(msg)
+    return jsonify(
+                _create_error_document(ErrorType.Forbidden.type, msg)
+            ), ErrorType.Forbidden.code
+
+@blueprint.errorhandler(Exception)
+def handle_exception(ex):
+    current_app.logger.error(str(ex), exc_info=True)
+    return jsonify(_create_error_document(
+        ErrorType.ServerError.type,
+        "Internal Server Error")), ErrorType.ServerError.code
+
+@blueprint_api.route("/import-task", methods=["POST"])
+@oauth2.require_oauth()
+@limiter.limit("")
+@require_oauth_scopes(item_bulk_process_scope.id)
+@check_on_behalf_of()
+def register_bulk_import_task():
+    """
+    Register bulk import check task
+    Args:
+        mode (str): "check" or "import"
+    Protocol Operation
+        * POST Import-Task-URL: /sword/import-task/<mode>
+    Request Requirements
+        * MUST specify Authorization header
+    Server Requirements
+        * MUST authenticate the request
+    Response Requirements
+        * MUST respond with a JSON object containing the task summary
+    Error Responses
+        * If no authentication credentials were supplied, but were expected, MUST respond with a 401
+        (AuthenticationRequired)
+        * If authentication fails with supplied credentials, MUST respond with a 403 (AuthenticationFailed)
+    """
+    try:
+        super_roles = current_app.config.get('WEKO_PERMISSION_SUPER_ROLE_USER', [])
+        if not (any(role.name in super_roles for role in current_user.roles)):
+            return jsonify({"result": "NG", "errors": ["Permission required."]}), 403
+
+        # パスパラメータ取得
+        content_disposition, content_disposition_options = parse_options_header(
+            request.headers.get("Content-Disposition") or ""
+        )
+        filename = content_disposition_options.get("filename")
+        if (content_disposition != "attachment" or filename is None):
+            current_app.logger.error("Cannot get filename by Content-Disposition.")
+            return jsonify({"result": "NG", "errors": [
+                "Cannot get filename by Content-Disposition."]}), 400
+
+        file = request.files.get("file")
+        if file is None:
+            current_app.logger.error(f"Not found {filename} in request body.")
+            return jsonify({"result": "NG", "errors": [
+                f"Not found {filename} in request body."]}), 404
+
+        # チェックモードフラグ
+        mode = request.args.get("mode", "import")
+        is_check_only = (mode == "check")
+        # 識別子変更モード
+        is_change_identifier = str(request.args.get(
+            "is_change_identifier", "false")).lower() == "true"
+
+        # 一時ファイルを保存
+        temp_dir = tempfile.mkdtemp()
+        temp_file_path = os.path.join(temp_dir, file.filename)
+        file.stream.seek(0)
+        with open(temp_file_path, "wb") as f:
+            shutil.copyfileobj(file.stream, f)
+
+        # ZIP判定
+        if not zipfile.is_zipfile(temp_file_path):
+            shutil.rmtree(temp_dir)
+            return jsonify({"result": "NG", "errors":
+                            ["Uploaded file is not a valid ZIP file"]}), 400
+
+        # チェックタスクをCeleryで非同期で実行
+        task = check_import_items_task.apply_async(
+            (
+                temp_file_path,
+                is_change_identifier,
+                request.host_url,
+                "en",  # 言語指定
+                False, # is_gakuninrdm
+                [0], # can_edit_indexes
+            )
+        )
+
+        summary_result = {}
+        timeout = current_app.config["WEKO_ITEMS_UI_BULK_IMPORT_TIMEOUT"]
+        retry_count = 0
+        # チェック完了まで待機し、サマリーを返す(タイムアウト制限あり)
+        while retry_count < timeout:
+            celery_task = check_import_items_task.AsyncResult(task.id)
+            if celery_task.status == "SUCCESS":
+                result = celery_task.result if isinstance(
+                    celery_task.result, dict) else {}
+                list_record = result.get("list_record", [])
+                errors = []
+                warnings = []
+                total = 0
+                new_item = 0
+                update_item = 0
+                check_error = 0
+                warning_count = 0
+                status = "SUCCESS"
+                if result.get("error"):
+                    errors.append(result.get("error"))
+
+                    summary_result = {
+                        "summary": {},
+                        "can_import": False,
+                        "check_status": "ERROR",
+                        "error_details": errors,
+                    }
+                    break
+                elif len(list_record) > 0:
+                    total = len(list_record)
+                    for item in list_record:
+                        if item.get("errors"):
+                            check_error += 1
+                            errors.extend(item.get("errors"))
+                            status = "ERROR"
+                        if item.get("warnings"):
+                            warning_count += len(item.get("warnings"))
+                            warnings.extend(item.get("warnings"))
+                            status = "WARNING"
+                        if item.get("status") == "new":
+                            new_item += 1
+                        elif item.get("status") in ("keep", "upgrade"):
+                            update_item += 1
+                    summary_result = {
+                        "summary": {
+                            "Total": total,
+                            "NewItem": new_item,
+                            "UpdateItem": update_item,
+                            "CheckError": check_error,
+                            "Warning": warning_count,
+                        },
+                        "check_status": status,
+                        "can_import": check_error == 0,
+                    }
+
+                if check_error > 0:
+                    summary_result["error_details"] = errors
+                if warning_count > 0:
+                    summary_result["warning_details"] = warnings
+                break
+
+            elif celery_task.status in ("FAILURE", "REVOKED"):
+                summary_result = {
+                    "summary": {},
+                    "can_import": False,
+                    "error_details": ["Check task failed."],
+                    "check_status": celery_task.status,
+                }
+                break
+            time.sleep(1)
+            retry_count += 1
+        else:
+            summary_result = {
+                "summary": {},
+                "can_import": False,
+                "error_details": ["Check task timeout."],
+                "check_status": "TIMEOUT",
+            }
+
+        # Redisにタスク情報を追加
+        user_id = current_user.get_id() if current_user else -1
+        expire_time = current_app.config['WEKO_ITEMS_UI_EXPIRE_TIME']
+        task_data = {
+            "user_id": user_id,
+            "created": datetime.now().isoformat(),
+            "expire": (datetime.now() + timedelta(hours=expire_time)).isoformat(),
+            "status": summary_result.get("check_status"),
+            "result": result,
+            "tasks": [],
+            "import_started": False,
+            "is_check_only": is_check_only,
+        }
+        summary_result["expire"] = task_data["expire"]
+        redis_connection = RedisConnection()
+        datastore = redis_connection.connection(
+            db=current_app.config['CACHE_REDIS_DB'], kv=True)
+        datastore.put(task.id, json.dumps(task_data).encode("utf-8"))
+
+        # チェックモードはここまで
+        if is_check_only:
+            summary_result["task_id"] = task.id
+            status_code = 200 if summary_result["can_import"] else 400
+            return jsonify(summary_result), status_code
+
+        # インポートモード、かつインポート可なら非同期でインポートを進める
+        if summary_result["can_import"] and mode == "import":
+            task_data["import_started"] = True
+            data_path = result.get("data_path")
+            list_doi = [item.get("bulk_doi") for item in list_record]
+            request_info = {
+                "remote_addr": request.remote_addr,
+                "referrer": request.referrer,
+                "hostname": request.host,
+                "user_id": user_id,
+                "action": "IMPORT",
+            }
+            request_info.update(UserActivityLogger.get_summary_from_request())
+            tasks = []
+            for idx, item in enumerate(list_record):
+                item["root_path"] = data_path + "/data"
+                create_flow_define()
+                handle_workflow(item)
+                # メタデータ補完
+                if list_doi and len(list_doi) > idx and list_doi[idx]:
+                    metadata_doi = handle_metadata_by_doi(item, list_doi[idx])
+                    item["metadata"] = metadata_doi
+                # celeryでインポート非同期実行
+                result_task = import_item.apply_async(args=[item, request_info])
+                tasks.append({
+                    "task_id": result_task.id,
+                    "task_status": "PENDING",
+                    "task_result": {}
+                })
+            task_data["tasks"] = tasks
+            task_data["status"] = "IMPORTING"
+            datastore.put(task.id, json.dumps(task_data).encode("utf-8"))
+        summary_result["task_id"] = task.id
+        summary_result["tasks"] = task_data["tasks"]
+        return jsonify(summary_result), 200
+    except Exception as ex:
+        current_app.logger.error(str(ex), exc_info=True)
+        return handle_exception(ex)
+
+@blueprint_api.route("/import-task/get_bulk_import_task_status/<task_id>", methods=["GET"])
+@oauth2.require_oauth()
+@require_oauth_scopes(item_bulk_process_scope.id)
+def get_bulk_import_task_status(task_id):
+    """
+    Get bulk import task status
+    Args:
+        task_id (str): Celery task id
+        Protocol Operation
+            * GET Import-Task-URL: /sword/import-task/
+                get_bulk_import_task_status/<task_id>
+        Request Requirements
+            * MUST specify Authorization header
+        Server Requirements
+            * MUST authenticate the request
+        Response Requirements
+            * MUST respond with a JSON object containing the task status
+                and result
+        Error Responses
+            * If no authentication credentials were supplied, but were expected,
+                MUST respond with a 401(AuthenticationRequired)
+            * If authentication fails with supplied credentials, MUST
+                respond with a 403 (AuthenticationFailed)
+    """
+    try:
+        redis_connection = RedisConnection()
+        datastore = redis_connection.connection(
+            db=current_app.config['CACHE_REDIS_DB'], kv=True)
+        task_json = datastore.get(task_id)
+        if not task_json:
+            return jsonify({"error": "Task not found"}), 404
+        try:
+            task_data = json.loads(task_json)
+        except Exception:
+            return jsonify({"error": "Task data decode error"}), 400
+
+        # ユーザーIDの一致チェック
+        user_id = None
+        if current_user and current_user.is_authenticated:
+            user_id = current_user.get_id()
+        task_user_id = str(task_data.get("user_id"))
+        if str(user_id) != task_user_id:
+            return jsonify({"error": "Permission denied"}), 403
+
+        # 各インポートタスクの状態更新
+        if ("tasks" in task_data) and len(task_data["tasks"]) > 0:
+            for task in task_data["tasks"]:
+                if "task_id" in task:
+                    try:
+                        import_result = import_item.AsyncResult(task["task_id"])
+                        task["task_status"] = import_result.status
+                        task_data["status"] = import_result.status
+                        task["task_result"] = import_result.result \
+                        if isinstance(import_result.result, dict) else {}
+                    except Exception:
+                        task["task_status"] = "ERROR"
+                        task_data["status"] = "ERROR"
+                        task["task_result"] = {}
+
+        # Redisに更新済みタスク情報を保存
+        datastore.put(task_id, json.dumps(task_data).encode("utf-8"))
+
+        status = task_data["status"]
+        result = task_data["result"]
+        result_error = result.get("error", [])
+        if status == "SUCCESS" and not result_error:
+            return jsonify({
+                "task_id": task_id,
+                "check_status": status,
+                "can_import": True,
+                "tasks": task_data.get("tasks"),
+                "expire": task_data.get("expire"),
+            }), 200
+        else:
+            return jsonify({
+                "task_id": task_id,
+                "check_status": status,
+                "can_import": False,
+                "error_details": result_error,
+                "tasks": task_data.get("tasks"),
+                "expire": task_data.get("expire"),
+            }), 400
+
+    except Exception as ex:
+        current_app.logger.error(str(ex), exc_info=True)
+        return jsonify({"error": "Task check failed"}), 400
+# 要求仕様4の実装 ここまで

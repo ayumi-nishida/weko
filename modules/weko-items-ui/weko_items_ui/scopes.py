@@ -67,9 +67,9 @@ ranking_read_scope = Scope(
 """Scope to protect ranking."""
 
 # 要求仕様4
-item_bulk_create_scope = Scope(
-    id_='item:bulkcreate',
+item_bulk_process_scope = Scope(
+    id_='item:bulkprocess',
     group='item',
-    help_text=_('Allow bulk create item.'),
+    help_text=_('Allow bulk process item.'),
 )
-"""Scope to bulk create item."""
+"""Scope to bulk process item."""
